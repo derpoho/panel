@@ -1,0 +1,17 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Built something on ServerOS, wrote a guide, or tuned a setup you're proud of? Show us.
+  - type: textarea
+    id: what
+    attributes:
+      label: What you made
+      description: What it is, what it runs on, and anything you learned along the way. Screenshots welcome.
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Repo, post or live site, if there is one.

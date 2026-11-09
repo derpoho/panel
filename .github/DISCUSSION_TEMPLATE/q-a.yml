@@ -1,0 +1,23 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask anything about running or building the panel. Found a bug? [Open an issue](https://github.com/serveroshq/panel/issues/new/choose) instead. Security problem? Follow [SECURITY.md](https://github.com/serveroshq/panel/blob/main/SECURITY.md), never post it here.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What are you trying to do, and where are you stuck?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you've tried
+      description: Commands, settings, docs pages. It saves everyone a round trip.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Panel version, daemon version (`serverosd --version`) and OS, if it's about a running install.
+      placeholder: panel 0.x, serverosd 0.x, Ubuntu 24.04
