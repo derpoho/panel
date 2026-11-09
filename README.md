@@ -36,7 +36,7 @@ We're moving the panel's code into this repo now. Until it lands, this repo hold
 | | Where | License |
 | --- | --- | --- |
 | The panel | This repo | [AGPL-3.0](LICENSE), free to self-host |
-| The daemon | [serveroshq/daemon](https://github.com/serveroshq/daemon) | [BSL 1.1](https://github.com/serveroshq/daemon/blob/main/LICENSE) |
+| The daemon | [serveroshq/daemon](https://github.com/serveroshq/daemon) | [AGPL-3.0](https://github.com/serveroshq/daemon/blob/main/LICENSE), free to self-host |
 | Paid features | A separate private repo | Commercial, unlocked with a license key |
 | ServerOS Cloud | [serveros.com](https://serveros.com) | A hosted service, not part of this repo |
 

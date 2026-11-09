@@ -23,7 +23,7 @@ ServerOS Cloud, the servers we run for you on [serveros.com](https://serveros.co
 
 ## The daemon
 
-The daemon that runs on your machines, [serverosd](https://github.com/serveroshq/daemon), has its own repo and its own license ([BSL 1.1](https://github.com/serveroshq/daemon/blob/main/LICENSE)).
+The daemon that runs on your machines, [serverosd](https://github.com/serveroshq/daemon), has its own repo and is under the [AGPL-3.0](https://github.com/serveroshq/daemon/blob/main/LICENSE) too.
 
 ## Contributions
 
