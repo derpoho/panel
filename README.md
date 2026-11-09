@@ -1,3 +1,12 @@
+<p align="center">
+  <a href="https://serveros.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark-mode.svg">
+      <img alt="ServerOS" src=".github/assets/logo-light-mode.svg" width="72">
+    </picture>
+  </a>
+</p>
+
 <h1 align="center">ServerOS panel</h1>
 
 <p align="center">One place to run the Linux servers you already own.</p>
