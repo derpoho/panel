@@ -37,7 +37,53 @@ You can, but you're responsible for every line you submit. Read [AI_POLICY.md](A
 
 ## Setting up the panel locally
 
-Setup instructions will be here when the code lands.
+You need PHP 8.4 with the extensions Laravel needs plus bcmath, intl, zip and pdo_sqlite (pdo_pgsql for PostgreSQL), Composer 2, Node 22 and npm.
+
+```sh
+git clone https://github.com/serveroshq/panel.git && cd panel
+composer install
+npm ci
+cp .env.example .env
+php artisan key:generate
+```
+
+Each workspace lives on its own subdomain, so point the panel at `serveros.localhost` (browsers send every `*.localhost` name to your computer) and share the login across subdomains. In `.env`:
+
+```dotenv
+APP_URL=http://serveros.localhost:8000
+APP_DOMAIN=serveros.localhost
+SESSION_DOMAIN=.serveros.localhost
+```
+
+The database is SQLite by default (`database/database.sqlite`). For PostgreSQL, set `DB_CONNECTION=pgsql` and `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`. Then:
+
+```sh
+php artisan migrate
+php artisan storage:link
+composer dev
+```
+
+`composer dev` runs the panel on port 8000, a queue worker, the logs and Vite together. Open http://serveros.localhost:8000/register, make an account and you land in your workspace. Mail goes to `storage/logs/laravel.log`, so look there for invitation and verification links.
+
+`composer setup` does the install, `.env`, key, migrations and a build in one go, if you'd rather. A fresh checkout is the self-hosted edition (`SERVEROS_EDITION=self-hosted`): every workspace is active, with no plan or trial.
+
+On Linux, `docker/dev/README.md` runs all of this in Docker instead.
+
+## Tests and checks
+
+CI runs all of these on every pull request. Run the ones your change touches before you push.
+
+```sh
+php artisan test --compact     # Pest, on SQLite in memory
+php artisan test --parallel    # the same, faster
+vendor/bin/pint                # PHP style (vendor/bin/pint --test only checks)
+composer types:check           # PHPStan
+npm run check                  # frontend format and lint (vp check; npm run check:fix fixes it)
+npm run types:check            # vue-tsc and tsc
+npm run build                  # the frontend build
+```
+
+Migrations have to run on SQLite, PostgreSQL and MySQL. Tests never touch your own database: phpunit.xml points them at SQLite in memory.
 
 ## Code of Conduct
 

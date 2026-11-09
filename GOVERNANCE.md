@@ -4,10 +4,10 @@ The ServerOS panel is run by ServerOS Cloud Ltd, the company that makes ServerOS
 
 ## Maintainers
 
-| Name | GitHub | Role |
-| --- | --- | --- |
-| Liam | [@liamdevss](https://github.com/liamdevss) | Co-founder |
-| Harry | [@HarryServerOS](https://github.com/HarryServerOS) | CTO |
+| Name  | GitHub                                             | Role       |
+| ----- | -------------------------------------------------- | ---------- |
+| Liam  | [@liamdevss](https://github.com/liamdevss)         | Co-founder |
+| Harry | [@HarryServerOS](https://github.com/HarryServerOS) | CTO        |
 
 Maintainers are listed in [CODEOWNERS](.github/CODEOWNERS) through the `serveroshq/maintainers` team, and one of them reviews every change.
 

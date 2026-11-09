@@ -56,12 +56,105 @@ jobs:
         with:
           fail-on-severity: moderate
 
+  # The panel's own checks. No secrets: the public panel needs no private
+  # package, so a pull request from a fork runs it exactly as main does.
+  # Each check runs once setup worked, even if an earlier one failed, so a
+  # red run lists every problem. The job still fails if any does.
+  tests:
+    name: tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: serveros
+          POSTGRES_PASSWORD: serveros
+          POSTGRES_DB: serveros
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U serveros -d serveros"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: bcmath, intl, pdo_pgsql, pdo_sqlite, zip
+          tools: composer:v2
+          coverage: none
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Install
+        id: setup
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --no-audit --no-fund
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Build
+        id: build
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: npm run build
+
+      - name: PHP style (Pint)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: composer lint:check
+
+      - name: PHP static analysis (PHPStan)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: composer types:check
+
+      - name: Frontend types
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npm run types:check
+
+      - name: Frontend format and lint (vp check)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npm run check
+
+      - name: Routes load and cache
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          php artisan route:list > /dev/null
+          php artisan route:cache
+          php artisan route:clear
+
+      - name: Migrations on PostgreSQL
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '5432'
+          DB_DATABASE: serveros
+          DB_USERNAME: serveros
+          DB_PASSWORD: serveros
+        run: php artisan migrate --force
+
+      - name: Tests (Pest)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          php artisan config:clear --ansi
+          php artisan test --parallel
+
   # The one check the main branch ruleset requires. Add new jobs to `needs`
   # instead of adding them to the ruleset.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [actionlint, zizmor, dependency-review]
+    needs: [actionlint, zizmor, dependency-review, tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
