@@ -1,0 +1,40 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
+
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        },
+        "types": ["vite/client"],
+        "resolveJsonModule": true,
+
+        "allowJs": true,
+
+        "sourceMap": true,
+        "noEmit": true,
+
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.vue",
+        // The private packages' panel pages.
+        "vendor/serveroshq/*/resources/js/**/*.ts",
+        "vendor/serveroshq/*/resources/js/**/*.vue"
+    ],
+    /* The packages' React code is checked with tsconfig.react.json. */
+    "exclude": ["vendor/serveroshq/*/resources/js/marketing"]
+}

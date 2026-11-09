@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - bootstrap/app.php
+        - config/
+        - database/
+        - routes/
+
+    level: 7
+
+    # The private packages' migrations as well as the panel's: some
+    # add columns to the panel's tables, like users.feedback_banned_at.
+    databaseMigrationsPath:
+        - database/migrations
+        - vendor/serveroshq/*/database/migrations

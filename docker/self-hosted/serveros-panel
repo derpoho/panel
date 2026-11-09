@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# Day-to-day commands for a self-hosted ServerOS panel, installed to
+# /usr/local/bin/serveros-panel by the install script. It works on the
+# install in SERVEROS_DIR (default /opt/serveros), where compose.yaml and
+# .env live.
+#
+#   serveros-panel status               what's running
+#   serveros-panel logs [service]       follow the logs (web, queue, scheduler, gateway, db, redis)
+#   serveros-panel upgrade [version]    back up, pull the new image and restart on it
+#   serveros-panel backup               the database, storage and .env, into backups/
+#   serveros-panel restore <backup>     put a backup back (replaces what's there now)
+#   serveros-panel gateway-certificate  renew the gateway's certificate if it runs out within 30 days
+#   serveros-panel nightly              both of those, as the install's cron runs it every night
+#   serveros-panel setup-code           the code the web installer asks for, until it's set up
+#   serveros-panel artisan <command>    run an artisan command in the panel
+#   serveros-panel restart | stop | start
+set -euo pipefail
+
+DIR="${SERVEROS_DIR:-/opt/serveros}"
+KEEP="${SERVEROS_BACKUP_KEEP:-14}"
+
+say() { printf '\033[1m%s\033[0m\n' "$*"; }
+fail() { printf 'serveros-panel: %s\n' "$*" >&2; exit 1; }
+
+[ -f "$DIR/compose.yaml" ] || fail "no install in $DIR (set SERVEROS_DIR if it's elsewhere)."
+cd "$DIR"
+
+compose() { docker compose --project-directory "$DIR" "$@"; }
+
+image() {
+    # The image the install runs, from .env (or compose.yaml's default).
+    local value
+    value="$(grep -E '^SERVEROS_IMAGE=' .env 2>/dev/null | tail -n1 | cut -d= -f2- || true)"
+    printf '%s' "${value:-ghcr.io/serveroshq/panel:latest}"
+}
+
+set_env() {
+    # set_env KEY VALUE: replace or add a line in .env.
+    local key="$1" value="$2"
+    if grep -qE "^${key}=" .env; then
+        sed -i "s|^${key}=.*|${key}=${value}|" .env
+    else
+        printf '%s=%s\n' "$key" "$value" >> .env
+    fi
+}
+
+wait_healthy() {
+    local tries=0
+    until compose exec -T web curl -fsS http://127.0.0.1:8081/up >/dev/null 2>&1; do
+        tries=$((tries + 1))
+        [ "$tries" -lt 90 ] || fail "the panel didn't come up in 3 minutes: serveros-panel logs web"
+        sleep 2
+    done
+}
+
+backup() {
+    local quiet="${1:-}" stamp target
+    stamp="$(date -u +%Y%m%d-%H%M%S)"
+    target="$DIR/backups/$stamp"
+    mkdir -p "$target"
+    chmod 700 "$DIR/backups" "$target"
+    [ -n "$quiet" ] || say "Backing up to $target"
+    compose exec -T db pg_dump -U serveros -d serveros --format=custom > "$target/database.dump"
+    # Storage holds the daemon CA's key: without it, machines can't reconnect.
+    compose exec -T web tar czf - --exclude=storage/framework --exclude=storage/logs -C /app storage > "$target/storage.tar.gz"
+    cp .env "$target/env"
+    chmod 600 "$target"/*
+    # The newest $KEEP backups stay.
+    ls -1d "$DIR"/backups/*/ 2>/dev/null | sort -r | tail -n +"$((KEEP + 1))" | while read -r old; do
+        rm -rf "$old"
+    done
+    [ -n "$quiet" ] || say "Done: $(du -sh "$target" | cut -f1)"
+}
+
+restore() {
+    local source="${1:-}"
+    [ -n "$source" ] || fail "say which backup: serveros-panel restore $DIR/backups/<when>"
+    [ -d "$source" ] || source="$DIR/backups/$source"
+    [ -f "$source/database.dump" ] && [ -f "$source/storage.tar.gz" ] || fail "$source isn't a backup (no database.dump and storage.tar.gz)."
+    say "Restoring $source: this replaces the database and storage now in use."
+    if [ -t 0 ]; then
+        read -r -p "Type restore to go on: " answer
+        [ "$answer" = "restore" ] || fail "nothing changed."
+    fi
+    compose stop queue scheduler gateway web
+    compose up -d db redis
+    compose exec -T db pg_restore -U serveros -d serveros --clean --if-exists --no-owner < "$source/database.dump"
+    compose run --rm --no-deps -T --entrypoint sh web -c 'tar xzf - -C /app' < "$source/storage.tar.gz"
+    compose up -d
+    wait_healthy
+    say "Restored. The .env from then is at $source/env if you need its keys (APP_KEY must match the backup)."
+}
+
+gateway_certificate() {
+    # The web container makes it (and only it can write /gateway); the
+    # gateway reads its certificate as it starts, so it restarts onto a new one.
+    local answer
+    answer="$(compose exec -T web serveros-entrypoint gateway-certificate | tail -n1)" || true
+    if [ "$answer" = "issued" ]; then
+        say "The gateway has a new certificate: restarting it"
+        compose restart gateway
+    elif [ "$answer" != "current" ]; then
+        fail "couldn't check the gateway's certificate: serveros-panel logs web"
+    fi
+}
+
+nightly() {
+    # Each step on its own, so one failing doesn't skip the other; the
+    # cron log says which failed, and so does the exit code.
+    local failed=0
+    "$0" gateway-certificate || failed=1
+    "$0" backup --quiet || failed=1
+    return "$failed"
+}
+
+upgrade() {
+    local version="${1:-}" current
+    if [ -n "$version" ]; then
+        current="$(image)"
+        set_env SERVEROS_IMAGE "${current%:*}:${version#v}"
+    fi
+    say "Backing up first"
+    backup quiet
+    say "Pulling $(image)"
+    compose pull
+    # The compose file and this script come with the image, so they match it.
+    docker run --rm --entrypoint cat "$(image)" /app/docker/self-hosted/compose.yaml > compose.yaml.new && mv compose.yaml.new compose.yaml
+    docker run --rm --entrypoint cat "$(image)" /app/docker/self-hosted/serveros-panel > /usr/local/bin/serveros-panel.new \
+        && chmod +x /usr/local/bin/serveros-panel.new && mv /usr/local/bin/serveros-panel.new /usr/local/bin/serveros-panel
+    # Migrations run as the web container starts.
+    compose up -d --remove-orphans
+    wait_healthy
+    say "Upgraded to $(compose exec -T web cat /app/VERSION 2>/dev/null || image)."
+}
+
+command="${1:-status}"
+shift || true
+case "$command" in
+    status) compose ps ;;
+    logs) compose logs -f --tail=200 "$@" ;;
+    upgrade) upgrade "$@" ;;
+    backup) backup "${1:+quiet}" ;;
+    restore) restore "$@" ;;
+    gateway-certificate) gateway_certificate ;;
+    nightly) nightly ;;
+    setup-code) compose exec -T web php artisan install:code "$@" ;;
+    artisan) compose exec web php artisan "$@" ;;
+    restart) compose restart ;;
+    stop) compose stop ;;
+    start) compose up -d ;;
+    help|-h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *) fail "unknown command $command (serveros-panel help)" ;;
+esac

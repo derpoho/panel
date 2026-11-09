@@ -1,0 +1,139 @@
+/*
+ * Laravel Pulse in the panel's colours. Pulse ships its own Tailwind build
+ * in grays; these point them at the dashboard's --ds-* tokens (app.css,
+ * loaded first), which already switch with .dark, so one rule covers each
+ * light class and its dark: twin. Printed after Pulse's own CSS by
+ * resources/views/components/pulse-layout.blade.php.
+ */
+
+body.pulse-panel {
+    background: var(--ds-frame);
+    color: var(--ds-text);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+}
+
+.pulse-panel .font-sans {
+    font-family: var(--font-ui);
+}
+
+.pulse-panel .font-mono,
+.pulse-panel code {
+    font-family: var(--font-ui-mono);
+}
+
+/* Cards: the dashboard's tiles. */
+.pulse-panel .bg-white,
+.pulse-panel .dark\:bg-gray-900 {
+    background-color: var(--ds-card);
+}
+
+.pulse-panel section.rounded-xl {
+    border-radius: 12px;
+    box-shadow: none;
+    --tw-ring-color: var(--ds-border);
+}
+
+.pulse-panel .ring-gray-900\/5,
+.pulse-panel .dark\:ring-gray-100\/10,
+.pulse-panel .ring-gray-100 {
+    --tw-ring-color: var(--ds-border);
+}
+
+/* Rows, chips and empty states. */
+.pulse-panel .bg-gray-50,
+.pulse-panel .bg-gray-100,
+.pulse-panel .dark\:bg-gray-800,
+.pulse-panel .dark\:bg-gray-950 {
+    background-color: var(--ds-subtle);
+}
+
+.pulse-panel .bg-gray-300,
+.pulse-panel .bg-gray-500,
+.pulse-panel .dark\:bg-gray-700 {
+    background-color: var(--ds-border-strong);
+}
+
+.pulse-panel .border-gray-200,
+.pulse-panel .border-gray-500,
+.pulse-panel .border-gray-700,
+.pulse-panel .dark\:border-gray-900,
+.pulse-panel .dark\:border-gray-700 {
+    border-color: var(--ds-divider);
+}
+
+.pulse-panel .text-gray-900,
+.pulse-panel .dark\:text-gray-100 {
+    color: var(--ds-text);
+}
+
+.pulse-panel .text-gray-700,
+.pulse-panel .dark\:text-gray-200 {
+    color: var(--ds-text-strong);
+}
+
+.pulse-panel .text-gray-600,
+.pulse-panel .dark\:text-gray-300 {
+    color: var(--ds-text-secondary);
+}
+
+.pulse-panel .text-gray-500 {
+    color: var(--ds-text-muted);
+}
+
+.pulse-panel .text-gray-400,
+.pulse-panel .dark\:text-gray-400,
+.pulse-panel .dark\:text-gray-500,
+.pulse-panel .dark\:text-gray-600 {
+    color: var(--ds-text-faint);
+}
+
+/* Card header icons. */
+.pulse-panel [class*='stroke-gray-'] {
+    stroke: var(--ds-text-faint);
+}
+
+.pulse-panel [class*='\[\&\>svg\]\:stroke-gray-'] > svg {
+    stroke: var(--ds-text-faint);
+}
+
+/* Card titles in the dashboard's weight, not bold. */
+.pulse-panel header h2.font-bold {
+    font-weight: 550;
+    color: var(--ds-text);
+}
+
+/* Selects (period, sort): the dashboard's raised buttons. */
+.pulse-panel select {
+    background-color: var(--ds-field);
+    border: 1px solid var(--ds-border);
+    border-radius: 8px;
+    color: var(--ds-text-secondary);
+    font-size: 13px;
+}
+
+.pulse-panel select:focus {
+    outline: 2px solid var(--ds-ring);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* The period selector's chips. */
+.pulse-panel button[wire\:click*='period'] {
+    border-radius: 6px;
+}
+
+/* The table header stays on the card, not the page. */
+.pulse-panel thead.bg-white,
+.pulse-panel thead.dark\:bg-gray-900 {
+    background-color: var(--ds-card);
+}
+
+.pulse-panel * {
+    scrollbar-color: var(--ds-scrollbar) transparent;
+}
+
+/* The logo is white; dark on a light page. */
+html:not(.dark) .pulse-logo {
+    filter: invert(1);
+}

@@ -1,0 +1,44 @@
+# Local development for the ServerOS panel, for Linux hosts.
+# Start it with docker/dev/dev.sh (see docker/dev/README.md).
+#
+# Host networking: the panel and Vite listen on your machine's own
+# localhost, so http://serveros.localhost:8000 and every workspace's
+# http://{name}.serveros.localhost:8000 work in the browser with no
+# /etc/hosts entries or port mapping.
+name: serveros-dev
+
+x-app: &app
+    image: serveros-dev
+    build:
+        context: .
+        args:
+            UID: ${UID:-1000}
+            GID: ${GID:-1000}
+    network_mode: host
+    volumes:
+        - ../..:/app
+        - composer-cache:/home/dev/.composer
+        - npm-cache:/home/dev/.npm
+
+services:
+    panel:
+        <<: *app
+        command: php artisan serve --host=127.0.0.1 --port=8000 --no-reload
+        environment:
+            PHP_CLI_SERVER_WORKERS: 4
+
+    vite:
+        <<: *app
+        command: npm run dev
+
+    queue:
+        <<: *app
+        command: php artisan queue:listen --tries=1 --timeout=0
+
+    scheduler:
+        <<: *app
+        command: php artisan schedule:work
+
+volumes:
+    composer-cache:
+    npm-cache:

@@ -1,0 +1,17 @@
+{
+    // The React code in the private packages (vendor/serveroshq):
+    // serveros.com's website, in resources/js/marketing. Checked by
+    // `npm run types:check`; without the packages there's nothing here but
+    // the panel's global types.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "react"
+    },
+    "include": [
+        "resources/js/types/global.d.ts",
+        "vendor/serveroshq/*/resources/js/marketing/**/*.ts",
+        "vendor/serveroshq/*/resources/js/marketing/**/*.tsx"
+    ],
+    "exclude": []
+}

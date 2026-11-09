@@ -1,0 +1,24 @@
+diff --git a/crates/daemon-identity/src/enrol.rs b/crates/daemon-identity/src/enrol.rs
+index 076887e..419bc49 100644
+--- a/crates/daemon-identity/src/enrol.rs
++++ b/crates/daemon-identity/src/enrol.rs
+@@ -72,7 +72,18 @@ pub async fn enrol(
+     facts: &MachineFacts,
+ ) -> Result<(EnrolResponse, Identity), EnrolError> {
+     let csr = key.certificate_request("pending", hostname)?;
+-    let client = Client::new(Trust::WebPki, format!("serverosd/{daemon_version} (enrol)"));
++    // Local Docker tests can pin the development panel's private CA.
++    // The normal install path continues to use the public web PKI.
++    let trust = match std::env::var("SERVEROS_LOCAL_PANEL_CA") {
++        Ok(path) => {
++            let pem = std::fs::read(&path).map_err(|e| {
++                EnrolError::Refused(format!("could not read local panel CA at {path}: {e}"))
++            })?;
++            Trust::pinned_pem(&pem)?
++        }
++        Err(_) => Trust::WebPki,
++    };
++    let client = Client::new(trust, format!("serverosd/{daemon_version} (enrol)"));
+     let request = EnrolRequest {
+         token,
+         csr: &csr,

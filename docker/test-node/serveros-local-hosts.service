@@ -1,0 +1,11 @@
+[Unit]
+Description=Map serveros.test to the Docker host
+Before=serverosd.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/serveros-local-hosts
+
+[Install]
+WantedBy=multi-user.target

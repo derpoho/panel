@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Disposable Docker fixture only. The test runs `serverosd run` itself.
+exit 0

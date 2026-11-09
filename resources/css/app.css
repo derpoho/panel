@@ -1,0 +1,2777 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+/*
+ * The private packages' styles (each package's resources/css), in
+ * their place among the panel's: @package-css 'file.css' imports a
+ * package's file there, or nothing without one (vite.config.ts).
+ * serveros.com's website brings its colours here and its site-…css parts
+ * below, and its staff admin's ticket text its own (admin-prose.css).
+ */
+@package-css 'marketing-theme.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+/* Pages from the private packages (panel-ee, serveros.com). */
+@source '../../vendor/serveroshq/*/resources/js';
+/* Not the third-party scripts a package keeps with them (resources/vendor). */
+@source not '../../vendor/serveroshq/*/resources/vendor';
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant no-gpu (&:is(.no-gpu *));
+
+@theme inline {
+    --font-sans:
+        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@theme {
+    --font-display: 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-hero: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-body: Cabin, ui-sans-serif, system-ui, sans-serif;
+    --font-ui: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-ui-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+@layer utilities {
+    body,
+    html {
+        --font-sans:
+            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+}
+
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(0 0% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 3.9%);
+    --primary: hsl(0 0% 9%);
+    --primary-foreground: hsl(0 0% 98%);
+    --secondary: hsl(0 0% 92.1%);
+    --secondary-foreground: hsl(0 0% 9%);
+    --muted: hsl(0 0% 96.1%);
+    --muted-foreground: hsl(0 0% 45.1%);
+    --accent: hsl(0 0% 96.1%);
+    --accent-foreground: hsl(0 0% 9%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(0 0% 92.8%);
+    --input: hsl(0 0% 89.8%);
+    --ring: hsl(0 0% 3.9%);
+    --chart-1: hsl(12 76% 61%);
+    --chart-2: hsl(173 58% 39%);
+    --chart-3: hsl(197 37% 24%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(27 87% 67%);
+    --radius: 0.5rem;
+    --sidebar-background: hsl(0 0% 98%);
+    --sidebar-foreground: hsl(240 5.3% 26.1%);
+    --sidebar-primary: hsl(0 0% 10%);
+    --sidebar-primary-foreground: hsl(0 0% 98%);
+    --sidebar-accent: hsl(0 0% 94%);
+    --sidebar-accent-foreground: hsl(0 0% 30%);
+    --sidebar-border: hsl(0 0% 91%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --sidebar: hsl(0 0% 98%);
+}
+
+.dark {
+    --background: hsl(0 0% 3.9%);
+    --foreground: hsl(0 0% 98%);
+    --card: hsl(0 0% 3.9%);
+    --card-foreground: hsl(0 0% 98%);
+    --popover: hsl(0 0% 3.9%);
+    --popover-foreground: hsl(0 0% 98%);
+    --primary: hsl(0 0% 98%);
+    --primary-foreground: hsl(0 0% 9%);
+    --secondary: hsl(0 0% 14.9%);
+    --secondary-foreground: hsl(0 0% 98%);
+    --muted: hsl(0 0% 16.08%);
+    --muted-foreground: hsl(0 0% 63.9%);
+    --accent: hsl(0 0% 14.9%);
+    --accent-foreground: hsl(0 0% 98%);
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(0 0% 14.9%);
+    --input: hsl(0 0% 14.9%);
+    --ring: hsl(0 0% 83.1%);
+    --chart-1: hsl(220 70% 50%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --sidebar-background: hsl(0 0% 7%);
+    --sidebar-foreground: hsl(0 0% 95.9%);
+    --sidebar-primary: hsl(360, 100%, 100%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(0 0% 15.9%);
+    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-border: hsl(0 0% 15.9%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+    --sidebar: hsl(240 5.9% 10%);
+}
+
+.auth-form {
+    & [data-slot='input'] {
+        @apply h-10 rounded-lg border-(--ds-border-strong) bg-(--ds-field) text-[14px] text-(--ds-text) shadow-none placeholder:text-(--ds-text-faint) focus-visible:border-[#3B7BFF] focus-visible:ring-[#3B7BFF]/20 md:text-[14px];
+    }
+
+    & [data-slot='label'] {
+        @apply text-[13px] font-medium text-(--ds-text-secondary);
+    }
+
+    & [data-slot='checkbox'] {
+        @apply border-(--ds-border-hover) bg-(--ds-field);
+    }
+
+    /* The rule above outranks the checkbox's own ticked colours, which left
+       a ticked box looking empty: tick it in the inputs' focus blue. */
+    & [data-slot='checkbox'][data-state='checked'] {
+        @apply border-[#3B7BFF] bg-[#3B7BFF] text-white;
+    }
+
+    & [data-slot='slug-input'] {
+        @apply h-10 rounded-lg text-[14px];
+    }
+
+    & [data-slot='input'][aria-invalid='true'] {
+        @apply border-(--ds-red) ring-3 ring-(--ds-red)/15 focus-visible:border-(--ds-red) focus-visible:ring-(--ds-red)/20;
+    }
+}
+
+/* The account screens' card, sized like Mindcloud's sign-in: 32px fields
+   with 13px text, 12px labels four pixels above them, and 32px buttons. */
+.auth-compact {
+    & [data-slot='input'],
+    & [data-slot='slug-input'] {
+        @apply h-8 rounded-md px-3 text-[13px] md:text-[13px];
+    }
+
+    & [data-slot='label'] {
+        @apply text-[12px]/4;
+    }
+
+    /* Each label and its field */
+    & .grid.gap-2 {
+        @apply gap-1.5;
+    }
+
+    /* Between the fields */
+    & .grid.gap-6,
+    & .flex.gap-6 {
+        @apply gap-5;
+    }
+
+    & button:not([data-slot='checkbox']),
+    & a[class*='inline-flex'] {
+        @apply h-8 min-h-8 rounded-md text-[12.5px];
+    }
+}
+
+/* The way to the other screen along the card's foot (sign in, sign up,
+   forgot password), a level deeper: the form ends in a white lip with
+   rounded corners and a soft shadow, resting on the grey shell the line
+   sits in, rather than a flat strip under a hairline. */
+.auth-foot {
+    position: relative;
+    border-top-color: transparent !important;
+    padding-top: calc(0.875rem + 18px) !important;
+    padding-bottom: 1.125rem !important;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: -1px 0 auto;
+        height: 19px;
+        border-radius: 0 0 16px 16px;
+        background: var(--ds-panel);
+        box-shadow:
+            0 1px 0 rgb(0 0 0 / 0.07),
+            0 6px 12px -6px rgb(0 0 0 / 0.16);
+    }
+}
+
+/*
+ * Sign in and sign up. The bloom is the landing hero's; in the dark it
+ * fades into the site's black instead of the pale page, and the card is the
+ * site's near-black with a hairline, not the dashboard's grey dialog.
+ */
+.auth-bloom {
+    background-image: var(--bloom);
+}
+
+html.dark .auth-page {
+    --ds-frame: #0a0a0a;
+    --ds-panel: #111111;
+    --ds-subtle: #0d0d0d;
+    --ds-field: #0a0a0a;
+    --ds-hover: #1a1a1a;
+    --ds-divider: #1c1c1c;
+    --ds-border: #222222;
+    --ds-border-strong: #2a2a2a;
+    --ds-border-hover: #3a3a3a;
+
+    & .auth-bloom {
+        background-image: radial-gradient(
+            201.67% 105.6% at 50% -6.34%,
+            #00000a 0%,
+            #010a24 24%,
+            #052070 40%,
+            #1f5fe0 60%,
+            #0d2a6e 78.5%,
+            #0a0a0a 96.5%
+        );
+    }
+
+    & .ds-modal {
+        border-color: rgb(255 255 255 / 0.08);
+        background: #111111;
+    }
+
+    & .auth-foot::before {
+        background: #111111;
+        box-shadow:
+            0 1px 0 rgb(255 255 255 / 0.06),
+            0 6px 12px -6px rgb(0 0 0 / 0.6);
+    }
+}
+
+@package-css 'site-landing-dark.css';
+
+/*
+ * The React marketing site, and the sign-in pages that share its look: the
+ * page's own frame colour for the track and the panel's border tone for the
+ * thumb, light or dark, blue when held.
+ */
+html:has(.marketing-page) {
+    background-color: var(--ds-frame);
+    scrollbar-color: var(--ds-border-stronger) var(--ds-frame);
+}
+
+/* Pages that open on black stay black behind the page, so pulling past the
+   top doesn't show the light frame (the serveros.com package's marketing.blade.php). */
+html.marketing-dark-top:has(.marketing-page) {
+    background-color: #111111;
+}
+
+html:has(.marketing-page)::-webkit-scrollbar {
+    width: 12px;
+}
+
+html:has(.marketing-page)::-webkit-scrollbar-track {
+    background: var(--ds-frame);
+}
+
+html:has(.marketing-page)::-webkit-scrollbar-thumb {
+    border: 3px solid var(--ds-frame);
+    border-radius: 999px;
+    background: var(--ds-border-stronger);
+}
+
+html:has(.marketing-page)::-webkit-scrollbar-thumb:hover,
+html:has(.marketing-page)::-webkit-scrollbar-thumb:active {
+    background: #3b7bff;
+}
+
+/* A sheen sweeping across the Installing / Setting up badge. */
+.installing-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        100deg,
+        transparent 20%,
+        rgb(255 255 255 / 0.12) 50%,
+        transparent 80%
+    );
+    animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .installing-badge::after {
+        animation: none;
+    }
+}
+
+/* Delete buttons: the trash lid lifts on hover, snaps shut on press, a
+ * brighter red sweeps across while deleting, and errors shake the button. */
+.danger-button__lid {
+    transform-box: fill-box;
+    transform-origin: 0% 100%;
+    transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.danger-button:hover:not(:disabled) .danger-button__lid {
+    transform: translateY(-2px) rotate(-14deg);
+}
+
+.danger-button:active:not(:disabled) .danger-button__lid,
+.danger-button--busy .danger-button__lid {
+    transform: none;
+    transition-duration: 120ms;
+}
+
+.danger-button__sweep {
+    opacity: 0;
+    background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(255 120 100 / 0.45),
+        transparent
+    );
+    transform: translateX(-100%);
+}
+
+.danger-button--busy .danger-button__sweep {
+    opacity: 1;
+    animation: danger-sweep 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.danger-button--shake {
+    animation: danger-shake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@package-css 'site-motion.css';
+
+/* Dashes running along a line, on the landing page's drawings. */
+@keyframes dash-flow {
+    to {
+        stroke-dashoffset: -14;
+    }
+}
+
+@package-css 'site-drawings.css';
+
+@keyframes danger-sweep {
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes danger-shake {
+    20%,
+    60% {
+        transform: translateX(-3px);
+    }
+    40%,
+    80% {
+        transform: translateX(3px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .danger-button__lid,
+    .danger-button:hover:not(:disabled) .danger-button__lid {
+        transform: none;
+        transition: none;
+    }
+
+    .danger-button--busy .danger-button__sweep,
+    .danger-button--shake {
+        animation: none;
+    }
+}
+
+/*
+ * Dashboard micro-interactions, in the same spirit as the delete button:
+ * small, springy and quick, and all of them off for reduced motion.
+ */
+
+/* Raised controls and segments press in slightly. */
+.ds-raised-button,
+.ds-segments > a,
+.ds-segments > button {
+    transition-property: color, background, box-shadow, scale;
+    transition-duration: 150ms;
+}
+
+.ds-raised-button:active,
+.ds-segments > a:active,
+.ds-segments > button:active {
+    scale: 0.97;
+}
+
+/* A plus that turns a quarter on hover, e.g. Connect server. */
+.mi-plus {
+    transition: rotate 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-plus {
+    rotate: 90deg;
+}
+
+/* A close ×: turns a quarter on hover and gives a little when pressed. */
+.mi-close {
+    transition:
+        rotate 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        scale 120ms ease-out;
+}
+
+:hover > .mi-close {
+    rotate: 90deg;
+}
+
+:active > .mi-close {
+    scale: 0.82;
+}
+
+/* Expand and shrink: the arrows push out, or tuck in, on hover. */
+.mi-grow,
+.mi-shrink {
+    transition: scale 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-grow {
+    scale: 1.18;
+}
+
+:hover > .mi-shrink {
+    scale: 0.8;
+}
+
+@package-css 'site-rainbow.css';
+
+/* Minimise: the bar dips, or rises when it would expand again. */
+.mi-dip {
+    transition: translate 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-dip {
+    translate: 0 2px;
+}
+
+:hover > .mi-dip.mi-dip-up {
+    translate: 0 -2px;
+}
+
+/* A progress ring (the setup guide's): it pops, and its arc fills again
+   from empty. Set --ring to the circle's circumference. */
+.mi-ring {
+    transition: scale 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-ring {
+    scale: 1.15;
+}
+
+.mi-ring-fill {
+    animation: mi-ring-fill 700ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:hover > .mi-ring .mi-ring-fill {
+    animation: mi-ring-fill-again 700ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes mi-ring-fill {
+    from {
+        stroke-dashoffset: var(--ring);
+    }
+}
+
+/* The same, under another name, so hovering starts it over. */
+@keyframes mi-ring-fill-again {
+    from {
+        stroke-dashoffset: var(--ring);
+    }
+}
+
+/*
+ * The sidebar toggle (PanelLeft): its divider slides the way the sidebar
+ * is about to go. Add .mi-panel-open while the sidebar is collapsed.
+ */
+.mi-panel path {
+    transition: translate 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-panel path {
+    translate: -2px 0;
+}
+
+:hover > .mi-panel.mi-panel-open path {
+    translate: 3px 0;
+}
+
+/* A copy icon (Lucide Copy): the two sheets pull apart on hover. */
+.mi-copy rect,
+.mi-copy path {
+    transition: translate 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mi-copy {
+    transition: opacity 150ms;
+}
+
+:hover > .mi-copy {
+    opacity: 1;
+}
+
+:hover > .mi-copy rect {
+    translate: 1.5px 1.5px;
+}
+
+:hover > .mi-copy path {
+    translate: -1px -1px;
+}
+
+/* The Solar copy icon: its front sheet is the first path. */
+:hover > .mi-copy g > path:first-child {
+    translate: 1.5px 1.5px;
+}
+
+/* An arrow that nudges the way it points. */
+.mi-arrow {
+    transition: translate 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-arrow {
+    translate: 2px 0;
+}
+
+:hover > .mi-arrow-up {
+    translate: 2px -2px;
+}
+
+/* A search glass that tilts. */
+.mi-tilt {
+    transition:
+        rotate 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        scale 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:hover > .mi-tilt {
+    rotate: -14deg;
+    scale: 1.12;
+}
+
+/* A dropdown chevron that nudges the way it points (it flips when open). */
+.mi-drop {
+    transition:
+        rotate 200ms ease,
+        translate 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-state='closed']:hover > .mi-drop {
+    translate: 0 1.5px;
+}
+
+[data-state='open']:hover > .mi-drop {
+    translate: 0 -1.5px;
+}
+
+/* An icon that spins while something reloads. */
+.mi-spin {
+    animation: mi-spin 700ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* An icon popping in when it replaces another, e.g. Copy becoming a tick. */
+.mi-pop {
+    animation: mi-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A tick that draws itself. Give the path pathLength="1". */
+.mi-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: mi-draw 320ms cubic-bezier(0.65, 0, 0.35, 1) 60ms forwards;
+}
+
+/* A light sheen across a primary button while it works. */
+.mi-sweep {
+    background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(255 255 255 / 0.22),
+        transparent
+    );
+    transform: translateX(-100%);
+    animation: danger-sweep 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes mi-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@keyframes mi-pop {
+    from {
+        scale: 0.4;
+        opacity: 0;
+    }
+}
+
+@keyframes mi-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-raised-button:active,
+    .ds-segments > a:active,
+    .ds-segments > button:active {
+        scale: none;
+    }
+
+    .mi-plus,
+    .mi-arrow,
+    .mi-tilt,
+    .mi-close,
+    .mi-dip,
+    .mi-grow,
+    .mi-shrink {
+        transition: none;
+    }
+
+    :hover > .mi-grow,
+    :hover > .mi-shrink {
+        scale: none;
+    }
+
+    .mi-panel path,
+    .mi-drop,
+    .mi-copy rect,
+    .mi-copy path {
+        transition: none;
+    }
+
+    :hover > .mi-copy rect,
+    :hover > .mi-copy path,
+    :hover > .mi-copy g > path:first-child {
+        translate: none;
+    }
+
+    :hover > .mi-tilt {
+        scale: none;
+    }
+
+    [data-state]:hover > .mi-drop {
+        translate: none;
+    }
+
+    :hover > .mi-panel path {
+        translate: none;
+    }
+
+    :active > .mi-close {
+        scale: none;
+    }
+
+    :hover > .mi-close,
+    :hover > .mi-dip,
+    :hover > .mi-plus,
+    :hover > .mi-arrow,
+    :hover > .mi-arrow-up,
+    :hover > .mi-tilt {
+        rotate: none;
+        translate: none;
+    }
+
+    .mi-spin,
+    .mi-pop,
+    .mi-sweep,
+    .mi-ring-fill,
+    :hover > .mi-ring .mi-ring-fill {
+        animation: none;
+    }
+
+    :hover > .mi-ring {
+        scale: none;
+    }
+
+    .mi-draw {
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+}
+
+/*
+ * Sidebar highlights (WorkspaceSidebar): a pill for the current page that
+ * springs between items, and a softer one that glides under the pointer.
+ */
+.sidebar-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    border-radius: 7px;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+}
+
+.sidebar-pill--active {
+    background-color: var(--ds-hover);
+    box-shadow: rgb(0 0 0 / 0.04) 0 1px 2px;
+}
+
+.dark .sidebar-pill--active {
+    box-shadow:
+        rgb(255 255 255 / 0.05) 0 1px 0 inset,
+        rgb(0 0 0 / 0.3) 0 1px 2px;
+}
+
+.sidebar-pill--hover {
+    background-color: color-mix(in srgb, var(--ds-hover) 55%, transparent);
+}
+
+.sidebar-pill--spring {
+    transition:
+        transform 420ms cubic-bezier(0.32, 1.32, 0.5, 1),
+        width 300ms cubic-bezier(0.32, 1.32, 0.5, 1),
+        height 300ms ease,
+        opacity 160ms ease;
+}
+
+.sidebar-pill--glide {
+    transition:
+        transform 260ms cubic-bezier(0.25, 1, 0.5, 1),
+        width 260ms cubic-bezier(0.25, 1, 0.5, 1),
+        opacity 160ms ease;
+}
+
+.sidebar-item {
+    position: relative;
+    z-index: 1;
+    transition-property: color, scale;
+}
+
+.sidebar-item:active {
+    scale: 0.97;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-pill--spring,
+    .sidebar-pill--glide {
+        transition: opacity 160ms ease;
+    }
+
+    .sidebar-item:active {
+        scale: none;
+    }
+}
+
+/* Settings search: the section it lands on lights up for a moment. */
+.settings-found {
+    scroll-margin-top: 24px;
+    animation: settings-found 1400ms ease-out;
+}
+
+@keyframes settings-found {
+    0%,
+    30% {
+        box-shadow: 0 0 0 2px var(--ds-ring);
+    }
+
+    100% {
+        box-shadow: 0 0 0 2px transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .settings-found {
+        animation: none;
+    }
+}
+
+/* Multi-step dialogs (MCP, Deploy a service): steps hand over without a jump. */
+.ds-step-frame {
+    overflow: hidden;
+    transition: height 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ds-step-enter-active,
+.ds-step-leave-active {
+    transition:
+        opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        translate 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ds-step-leave-active {
+    transition-duration: 180ms;
+}
+
+.ds-step-enter-from {
+    opacity: 0;
+    translate: 12px 0;
+    filter: blur(4px);
+}
+
+.ds-step-leave-to {
+    opacity: 0;
+    translate: -12px 0;
+    filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-step-frame,
+    .ds-step-enter-active,
+    .ds-step-leave-active {
+        transition: none;
+    }
+}
+
+/*
+ * Optically centred numerals, e.g. in step circles: trims the line box to
+ * the cap height so flex centring lines up with the digits, not the font's
+ * uneven ascent and descent.
+ */
+.ds-cap-trim {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-box: trim-both cap alphabetic;
+}
+
+/* JobStatusBadge: the old label blurs up and out as the new one lands. */
+.badge-label-leave {
+    animation: badge-label-leave 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes badge-label-leave {
+    to {
+        opacity: 0;
+        filter: blur(3px);
+        translate: 0 -2px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .badge-label-leave {
+        animation: none;
+        opacity: 0;
+    }
+}
+
+/* Shimmer placeholder for content that's loading. */
+.shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--ds-shimmer-base);
+}
+
+.shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        transparent,
+        var(--ds-shimmer-sheen),
+        transparent
+    );
+    animation: shimmer 1.8s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shimmer::after {
+        animation: none;
+    }
+}
+
+@package-css 'site-sheen.css';
+
+/*
+ * Workspace dashboard design tokens. Light values live on :root and dark
+ * values under .dark, so portalled dialogs, menus, sheets and toasts pick
+ * them up too. Only the dashboard reads --ds-*; the landing page and auth
+ * pages keep their own hardcoded colours.
+ */
+:root {
+    --ds-frame: #f7f7f6;
+    --ds-panel: #ffffff;
+    --ds-card: #ffffff;
+    --ds-field: #ffffff;
+    --ds-subtle: #f4f4f2;
+    --ds-hover: #f1f1ef;
+    --ds-row-hover: #fafaf9;
+    --ds-active: #eaeae7;
+    --ds-avatar: #e4e4e0;
+    /* The sidebar's Home and Activity switch: a sunk track, a raised thumb. */
+    --ds-segment-track: #ededeb;
+    --ds-segment-thumb: #ffffff;
+    --ds-divider: #efefec;
+    --ds-border: #e7e7e4;
+    --ds-border-strong: #dededa;
+    --ds-border-stronger: #d6d6d1;
+    --ds-border-hover: #c9c9c4;
+    --ds-border-focus: #b5b5af;
+    --ds-text: #151515;
+    --ds-text-strong: #161616;
+    --ds-text-secondary: #3f3f3c;
+    --ds-text-muted: #6b6b66;
+    --ds-text-faint: #8e8e88;
+    --ds-text-subtle: #9a9a94;
+    --ds-inverse: #151515;
+    --ds-code: #f7f7f6;
+    --ds-inverse-text: #ffffff;
+    --ds-ring: #3b7bff;
+    --ds-blue: #1f5fe0;
+    --ds-blue-strong: #1a4fbf;
+    --ds-blue-bg: #eef4ff;
+    --ds-blue-border: #c3d5fb;
+    --ds-amber: #b45309;
+    --ds-amber-strong: #92400e;
+    --ds-amber-bg: #fef6e0;
+    --ds-amber-border: #f3d58f;
+    --ds-green: #15803d;
+    --ds-green-strong: #166534;
+    --ds-green-bg: #e9f8ee;
+    --ds-green-border: #a9ddbb;
+    --ds-red: #b42318;
+    --ds-red-bg: #feeceb;
+    --ds-panel-ring: #e2e2de;
+    --ds-shadow-drop: rgb(0 0 0 / 0.04);
+    --ds-overlay: rgb(21 21 21 / 0.28);
+    --ds-scrollbar: #d6d6d1;
+    --ds-shimmer-base: #efefec;
+    --ds-shimmer-sheen: rgb(255 255 255 / 0.7);
+}
+
+.dark {
+    --ds-frame: #111111;
+    --ds-panel: #0a0a0a;
+    --ds-card: #141414;
+    --ds-field: #161616;
+    --ds-subtle: #121212;
+    --ds-hover: #1c1c1c;
+    --ds-row-hover: #161616;
+    --ds-active: #242424;
+    --ds-avatar: #2a2a2a;
+    --ds-segment-track: #0a0a0a;
+    --ds-segment-thumb: #222222;
+    --ds-divider: #1c1c1c;
+    --ds-border: #232323;
+    --ds-border-strong: #2a2a2a;
+    --ds-border-stronger: #323232;
+    --ds-border-hover: #3a3a3a;
+    --ds-border-focus: #4a4a4a;
+    --ds-text: #ededed;
+    --ds-text-strong: #d4d4d4;
+    --ds-text-secondary: #c2c2c1;
+    --ds-text-muted: #9d9d9a;
+    --ds-text-faint: #868683;
+    --ds-text-subtle: #757572;
+    --ds-inverse: #eeeeec;
+    --ds-code: #0d0d0d;
+    --ds-inverse-text: #0a0a0a;
+    --ds-ring: #60a5fa;
+    --ds-blue: #60a5fa;
+    --ds-blue-strong: #93bbfd;
+    --ds-blue-bg: #1b2a45;
+    --ds-blue-border: #2f4c80;
+    --ds-amber: #fbbf24;
+    --ds-amber-strong: #fcd34d;
+    --ds-amber-bg: #3a2a0c;
+    --ds-amber-border: #6b4e16;
+    --ds-green: #4ade80;
+    --ds-green-strong: #6ee7b7;
+    --ds-green-bg: #12291c;
+    --ds-green-border: #1f5136;
+    --ds-red: #f87171;
+    --ds-red-bg: #3a1f1f;
+    --ds-panel-ring: #1c1c1c;
+    --ds-shadow-drop: rgb(0 0 0 / 0.02);
+    --ds-overlay: rgb(0 0 0 / 0.6);
+    --ds-scrollbar: #333333;
+    --ds-shimmer-base: #161616;
+    --ds-shimmer-sheen: rgb(255 255 255 / 0.06);
+}
+
+/* The dashboard shell: native controls and scrollbars follow the theme. */
+.ds-root,
+.workspace-panel {
+    color-scheme: light;
+    scrollbar-color: var(--ds-scrollbar) transparent;
+}
+
+@package-css 'site-popular.css';
+
+/* The marketing site's dark bands, footer and nav over them: a neutral
+   black like the rest of the site's ink, not the panel's cooler one. */
+.dark.marketing-black {
+    --ds-frame: #111111;
+    /* A shade lighter than the panel's #7c7b76, which was 4.45:1 on this
+       black: the footer's small print now meets WCAG AA (4.5:1). */
+    --ds-text-faint: #7e7d78;
+}
+
+.dark .ds-root,
+.dark.ds-root,
+.dark .workspace-panel,
+.dark.workspace-panel {
+    color-scheme: dark;
+}
+
+/* Compact dialog forms in the dashboard, after .auth-panel but themed. */
+.ds-form {
+    & [data-slot='input'] {
+        @apply h-8 bg-(--ds-field) text-[13px] md:text-[13px];
+    }
+
+    & [data-slot='label'] {
+        @apply text-[13px] text-[#52524e];
+    }
+}
+
+.dark .ds-form,
+.dark.ds-form {
+    & [data-slot='input'] {
+        @apply bg-white/4;
+    }
+
+    & [data-slot='label'] {
+        @apply text-[#a1a1a1];
+    }
+}
+
+/* Shared form components (inputs, buttons, selects) inside workspace pages. */
+.workspace-panel {
+    --background: var(--ds-panel);
+    --foreground: var(--ds-text);
+    --card: var(--ds-card);
+    --card-foreground: var(--ds-text);
+    --popover: var(--ds-frame);
+    --popover-foreground: var(--ds-text);
+    --primary: #151515;
+    --primary-foreground: #ffffff;
+    --secondary: var(--ds-hover);
+    --secondary-foreground: var(--ds-text);
+    --accent: var(--ds-hover);
+    --accent-foreground: var(--ds-text);
+    --muted: var(--ds-hover);
+    --muted-foreground: var(--ds-text-muted);
+    --border: var(--ds-border);
+    --input: var(--ds-border-strong);
+    --ring: var(--ds-ring);
+}
+
+.dark .workspace-panel,
+.dark.workspace-panel {
+    --primary: #ffffff;
+    --primary-foreground: #171717;
+}
+
+/*
+ * Dashboard boxes: flat white, a 1px border and small corners, no shadow.
+ * Headers sit on the box itself above a hairline; rows split by hairlines.
+ */
+.ds-tile {
+    --tile-bg: #ffffff;
+    --tile-head: #ffffff;
+    --tile-inner: #fafaf9;
+    --tile-edge: rgb(0 0 0 / 0.1);
+    --tile-rule: rgb(0 0 0 / 0.07);
+
+    position: relative;
+    overflow: clip;
+    border-radius: 10px;
+    background-color: var(--tile-bg);
+    box-shadow: var(--tile-edge) 0 0 0 1px;
+}
+
+.dark .ds-tile {
+    --tile-bg: var(--ds-card);
+    --tile-head: var(--ds-card);
+    --tile-inner: #161616;
+    --tile-edge: rgb(255 255 255 / 0.08);
+    --tile-rule: rgb(255 255 255 / 0.06);
+}
+
+.ds-tile-head {
+    background-color: var(--tile-head);
+}
+
+.ds-tile-danger {
+    --tile-edge: color-mix(in srgb, var(--ds-red) 35%, transparent);
+}
+
+/* Rows inside a box: a hairline between them. */
+.ds-tile-row {
+    box-shadow: var(--tile-rule) 0 1px 0 inset;
+}
+
+.ds-tile-body > .ds-tile-row:first-child,
+.ds-tile-body > :first-child > .ds-tile-row:first-child,
+.ds-tile-rows > .ds-tile-row:first-child {
+    box-shadow: none;
+}
+
+.ds-tile-divider {
+    height: 1px;
+    flex-shrink: 0;
+    background-color: var(--tile-rule);
+}
+
+.ds-tile-inner {
+    overflow: clip;
+    border-radius: 8px;
+    background-color: var(--tile-inner);
+    box-shadow: var(--tile-rule) 0 0 0 1px;
+}
+
+/* A box's icon: just the glyph, muted, beside the title. */
+.ds-icon-chip {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: var(--ds-text-muted);
+
+    & > svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Segmented page tabs: a recessed track with raised, bevelled segments. */
+.ds-segments {
+    display: flex;
+    gap: 2px;
+    width: fit-content;
+    padding: 2px;
+    overflow: clip;
+    border-radius: 9px;
+    background-color: var(--ds-segment-track);
+
+    & > a,
+    & > button {
+        display: flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 7px;
+        color: var(--ds-text-muted);
+        font-size: 13.5px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: -0.01em;
+
+        &:hover {
+            color: var(--ds-text);
+        }
+
+        &[aria-current='page'],
+        &[aria-pressed='true'],
+        &[role='tab'][aria-selected='true'] {
+            background-color: var(--ds-segment-thumb);
+            color: var(--ds-text);
+            box-shadow:
+                rgb(0 0 0 / 0.08) 0 1px 2px,
+                rgb(0 0 0 / 0.06) 0 0 0 0.5px;
+        }
+    }
+}
+
+/* Dark: the same flat track, the chosen one a shade up with a faint top edge. */
+.dark .ds-segments {
+    & > a,
+    & > button {
+        &[aria-current='page'],
+        &[aria-pressed='true'],
+        &[role='tab'][aria-selected='true'] {
+            box-shadow:
+                rgb(255 255 255 / 0.06) 0 1px 0 inset,
+                rgb(0 0 0 / 0.3) 0 1px 2px;
+        }
+    }
+}
+
+/*
+ * A large choice button (survey answers, scale numbers): a segmented tab
+ * on its own. Raised until chosen, then pressed in like the active tab.
+ */
+.ds-choice {
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #3f3f3c;
+    box-shadow:
+        rgb(0 0 0 / 0.06) 0 1px 2px,
+        rgb(0 0 0 / 0.08) 0 0 0 1px;
+    transition-property: color, background, box-shadow, scale;
+    transition-duration: 150ms;
+
+    &:hover {
+        color: #151515;
+    }
+
+    &:active {
+        scale: 0.985;
+    }
+
+    &[aria-checked='true'] {
+        background-color: #f4f4f2;
+        color: #151515;
+        box-shadow:
+            rgb(0 0 0 / 0.08) 0 1px 2px inset,
+            var(--ds-ring) 0 0 0 1px;
+    }
+}
+
+.dark .ds-choice {
+    background: linear-gradient(180deg, #1c1c1c 50%, #31312e);
+    color: #c8c8c9;
+    box-shadow:
+        #2a2a2a 0 0.8px 0 inset,
+        rgb(255 255 255 / 0.1) 0 1px 2px -1px inset,
+        rgb(0 0 0 / 0.5) 0 2px 4px -1px,
+        rgb(0 0 0 / 0.24) 0 0 0 1px;
+
+    &:hover {
+        color: #ffffff;
+    }
+
+    &[aria-checked='true'] {
+        background: linear-gradient(180deg, #1a1a1e 50%, #212126);
+        color: #ffffff;
+        box-shadow:
+            rgb(0 0 0 / 0.32) 0 -1px 2px inset,
+            rgb(0 0 0 / 0.2) 0 2px 4px inset,
+            rgb(255 255 255 / 0.08) 0 -1px 2px inset,
+            rgb(96 165 250 / 0.55) 0 0 0 1px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-choice:active {
+        scale: 1;
+    }
+}
+
+/* Dashboard dialogs: the raised, bevelled surface of the segmented tabs. */
+.ds-modal {
+    border: 1px solid rgb(0 0 0 / 0.08);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow:
+        rgb(255 255 255) 0 1px 0 inset,
+        rgb(0 0 0 / 0.06) 0 2px 4px -1px,
+        rgb(0 0 0 / 0.12) 0 24px 64px -12px;
+}
+
+.dark .ds-modal {
+    border-color: rgb(0 0 0 / 0.5);
+    background: linear-gradient(180deg, #161616 50%, #181818);
+    box-shadow:
+        #2a2a2a 0 0.8px 0 inset,
+        rgb(255 255 255 / 0.1) 0 1px 2px -1px inset,
+        rgb(0 0 0 / 0.5) 0 2px 4px -1px,
+        rgb(0 0 0 / 0.55) 0 24px 64px -12px;
+}
+
+/* Native selects that sit next to Inputs: same box, our own chevron. */
+.ds-select {
+    appearance: none;
+    padding-right: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238f8e89' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.625rem center;
+    background-repeat: no-repeat;
+    background-size: 14px;
+}
+
+/* Compact segments, e.g. the category filter in Deploy a service. */
+.ds-segments--sm > a,
+.ds-segments--sm > button {
+    padding: 3px 10px;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+/* The raised small control in tile headers, e.g. "All machines". */
+.ds-raised-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #3f3f3c;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow:
+        rgb(0 0 0 / 0.06) 0 1px 2px,
+        rgb(0 0 0 / 0.08) 0 0 0 1px;
+
+    &:hover {
+        color: #151515;
+    }
+}
+
+.dark .ds-raised-button {
+    background-color: #161616;
+    color: rgb(255 255 255 / 0.8);
+    box-shadow:
+        rgb(255 255 255 / 0.04) 0 1px 0 inset,
+        rgb(255 255 255 / 0.04) 0 0 0 1px inset,
+        rgb(0 0 0 / 0.08) 0 2px 4px -1px,
+        rgb(0 0 0 / 0.12) 0 0 0 1px;
+
+    &:hover {
+        color: #ffffff;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html,
+    body {
+        @apply overscroll-none;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* A group row's hover peek: the list of what's inside. It grows from the
+   logo it came from, and its rows follow a beat apart. */
+.group-peek {
+    transform-origin: var(--reka-tooltip-content-transform-origin);
+}
+
+.group-peek[data-state='delayed-open'],
+.group-peek[data-state='instant-open'] {
+    animation: group-peek-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.group-peek[data-state='closed'] {
+    animation: group-peek-out 100ms ease-in forwards;
+}
+
+.group-peek-item {
+    animation: group-peek-item 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 25ms + 40ms);
+}
+
+@keyframes group-peek-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px) scale(0.97);
+    }
+}
+
+@keyframes group-peek-out {
+    to {
+        opacity: 0;
+        transform: translateY(-2px) scale(0.98);
+    }
+}
+
+@keyframes group-peek-item {
+    from {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .group-peek,
+    .group-peek-item {
+        animation: none !important;
+    }
+}
+
+/*
+ * Workflow canvas, in the dashboard's own tokens: a dotted canvas on the
+ * page's frame, neutral cards with hairlines, and the step's colour only
+ * on its icon. Run states use the same blue, green and red as elsewhere.
+ */
+.wf-root {
+    --wf-bg: var(--ds-frame);
+    --wf-dot: var(--ds-border-strong);
+    --wf-panel: var(--ds-card);
+    --wf-text: var(--ds-text);
+    --wf-muted: var(--ds-text-muted);
+    --wf-faint: var(--ds-text-faint);
+    --wf-line: var(--ds-border);
+    --wf-hover: var(--ds-hover);
+    --wf-field: var(--ds-field);
+    --wf-body-base: var(--ds-subtle);
+    --wf-stub: var(--ds-border-hover);
+    --wf-edge: var(--ds-text-faint);
+}
+
+.wf-canvas {
+    background: var(--wf-bg);
+}
+
+.wf-grid {
+    background-image: radial-gradient(
+        circle,
+        var(--wf-dot) 1px,
+        transparent 1.5px
+    );
+}
+
+.wf-tone {
+    color: var(--accent-ink);
+}
+
+.dark .wf-tone {
+    color: var(--accent);
+}
+
+/* Set where a step's accent is: its card, its panel. */
+.wf-node,
+.wf-inspector {
+    --wf-tone: var(--accent-ink);
+}
+
+.dark .wf-node,
+.dark .wf-inspector {
+    --wf-tone: var(--accent);
+}
+
+.wf-node-fresh {
+    animation: wf-pop 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes wf-pop {
+    from {
+        opacity: 0;
+        scale: 0.96;
+    }
+}
+
+.wf-card {
+    border-color: var(--ds-border);
+    background: var(--ds-card);
+    box-shadow: 0 1px 2px var(--ds-shadow-drop);
+}
+
+.wf-node:hover .wf-card {
+    border-color: var(--ds-border-hover);
+}
+
+.wf-node[data-selected] .wf-card {
+    border-color: var(--ds-border-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-text) 6%, transparent);
+}
+
+.wf-node[data-targeted] .wf-card {
+    border-color: var(--ds-blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-blue) 18%, transparent);
+}
+
+.wf-node[data-dragging] .wf-card {
+    box-shadow:
+        0 24px 48px rgb(0 0 0 / 0.14),
+        0 8px 16px rgb(0 0 0 / 0.08);
+}
+
+.wf-node[data-run='running'] .wf-card,
+.wf-node[data-run='waiting'] .wf-card {
+    border-color: var(--ds-blue);
+}
+
+.wf-node[data-run='succeeded'] .wf-card {
+    border-color: var(--ds-green-border);
+}
+
+.wf-node[data-run='failed'] .wf-card {
+    border-color: var(--ds-red);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-red) 14%, transparent);
+}
+
+.wf-node[data-run='skipped'] .wf-card,
+.wf-node[data-run='pending'] .wf-card,
+.wf-node[data-run='cancelled'] .wf-card {
+    opacity: 0.45;
+}
+
+.wf-body {
+    background: var(--wf-body-base);
+}
+
+.wf-ping {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-blue) 60%, transparent);
+    animation: wf-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes wf-ping {
+    75%,
+    100% {
+        opacity: 0;
+        transform: scale(1.04);
+    }
+}
+
+.wf-badge {
+    color: var(--ds-text-muted);
+    background: var(--ds-subtle);
+    box-shadow: 0 0 0 1px var(--ds-border);
+}
+
+.wf-badge[data-state='running'],
+.wf-badge[data-state='waiting'] {
+    color: var(--ds-blue);
+    background: var(--ds-blue-bg);
+    box-shadow: 0 0 0 1px var(--ds-blue-border);
+}
+
+.wf-badge[data-state='succeeded'] {
+    color: var(--ds-green);
+    background: var(--ds-green-bg);
+    box-shadow: 0 0 0 1px var(--ds-green-border);
+}
+
+.wf-badge[data-state='failed'] {
+    color: var(--ds-red);
+    background: var(--ds-red-bg);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-red) 30%, transparent);
+}
+
+.wf-if-pill {
+    display: flex;
+    height: 1.25rem;
+    align-items: center;
+    border-radius: 5px;
+    padding: 0 6px;
+    font-family: var(--font-ui-mono, ui-monospace, monospace);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    background: var(--ds-subtle);
+    box-shadow: 0 0 0 1px var(--ds-border);
+}
+
+.wf-handle {
+    position: absolute;
+    left: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    translate: -50% 0;
+    border-radius: 9999px;
+    background: var(--ds-card);
+    box-shadow: 0 0 0 1.5px var(--ds-border-hover);
+}
+
+.wf-node:hover .wf-handle,
+.wf-node[data-selected] .wf-handle {
+    box-shadow: 0 0 0 1.5px var(--ds-text-faint);
+}
+
+.wf-port-pill {
+    position: absolute;
+    display: flex;
+    height: 1.25rem;
+    translate: -50% -50%;
+    align-items: center;
+    border-radius: 5px;
+    padding: 0 7px;
+    font-size: 11.5px;
+    line-height: 1.5rem;
+    font-weight: 500;
+    pointer-events: none;
+    color: var(--ds-text-muted);
+    background: var(--ds-card);
+    box-shadow: 0 0 0 1px var(--ds-border-strong);
+}
+
+.wf-port-pill[data-port='failed'] {
+    color: var(--ds-red);
+    background: var(--ds-red-bg);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-red) 30%, transparent);
+}
+
+.wf-endpoint {
+    position: absolute;
+    display: flex;
+    width: 0.875rem;
+    height: 0.875rem;
+    translate: -50% -50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--wf-text);
+    color: var(--wf-bg);
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--wf-text) 22%, transparent),
+        0 0 4px 3px rgb(0 0 0 / 0.15);
+    transition: box-shadow 150ms;
+}
+
+.wf-endpoint::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+    border-radius: 9999px;
+}
+
+.wf-endpoint:hover {
+    box-shadow:
+        0 0 0 5px color-mix(in srgb, var(--wf-text) 28%, transparent),
+        0 0 4px 5px rgb(0 0 0 / 0.15);
+}
+
+.wf-endpoint[data-snapped] {
+    box-shadow:
+        0 0 0 7px color-mix(in srgb, var(--wf-text) 32%, transparent),
+        0 0 4px 7px rgb(0 0 0 / 0.15);
+}
+
+.wf-dash {
+    animation: wf-dash 0.6s linear infinite;
+}
+
+@keyframes wf-dash {
+    to {
+        stroke-dashoffset: -12;
+    }
+}
+
+.wf-placeholder {
+    border-color: var(--ds-border-hover);
+    background: color-mix(in srgb, var(--ds-text) 3%, transparent);
+}
+
+.wf-panel {
+    background: var(--wf-panel);
+    color: var(--wf-text);
+    box-shadow:
+        0 12px 32px rgb(0 0 0 / 0.06),
+        0 2px 4px rgb(0 0 0 / 0.04),
+        0 0 0 1px var(--ds-border);
+}
+
+.dark .wf-panel {
+    box-shadow:
+        0 12px 32px rgb(0 0 0 / 0.3),
+        0 2px 4px rgb(0 0 0 / 0.2),
+        0 0 0 1px var(--ds-border);
+}
+
+.wf-divider {
+    height: 1px;
+    flex-shrink: 0;
+    background: var(--wf-line);
+}
+
+.wf-item:hover,
+.wf-item:focus-visible {
+    background: var(--wf-hover);
+    box-shadow: 0 0 0 1px var(--wf-line);
+}
+
+.wf-item:focus-visible {
+    box-shadow: 0 0 0 1px var(--ds-ring);
+}
+
+.wf-ghost {
+    background: var(--wf-panel);
+    box-shadow:
+        0 24px 48px rgb(0 0 0 / 0.2),
+        0 2px 4px rgb(0 0 0 / 0.16),
+        0 0 0 1px var(--wf-line);
+}
+
+.wf-field {
+    border-radius: 8px;
+    background: var(--wf-field);
+    color: var(--wf-text);
+    box-shadow:
+        0 0 0 1px var(--wf-line),
+        0 1px 2px rgb(0 0 0 / 0.06);
+    outline: none;
+}
+
+.dark .wf-field {
+    box-shadow:
+        0 0 0 1px rgb(0 0 0 / 0.4),
+        inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.wf-field:focus {
+    box-shadow:
+        0 0 0 1px var(--ds-ring),
+        0 0 0 3px color-mix(in srgb, var(--ds-ring) 20%, transparent);
+}
+
+.wf-field:disabled {
+    opacity: 0.7;
+}
+
+.wf-code {
+    border-radius: 8px;
+    background: var(--wf-hover);
+    color: var(--wf-text);
+    box-shadow: 0 0 0 1px var(--wf-line);
+}
+
+.wf-card-soft {
+    border-radius: 12px;
+    background: var(--wf-hover);
+    box-shadow: 0 0 0 1px var(--wf-line);
+}
+
+.wf-button {
+    display: inline-flex;
+    height: 2.25rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 8px;
+    padding: 0 0.625rem;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--wf-panel);
+    color: var(--wf-text);
+    box-shadow:
+        0 0 0 1px var(--wf-line),
+        0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.wf-button:hover {
+    background: color-mix(in srgb, var(--wf-text) 5%, var(--wf-panel));
+}
+
+.wf-button:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.wf-accent-button {
+    display: inline-flex;
+    height: 2.25rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(#7f59f0, #6a43e6);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.2),
+        inset 0 1px 0 rgb(255 255 255 / 0.16);
+}
+
+.wf-accent-button:hover {
+    background: linear-gradient(#8a66f5, #7450ec);
+}
+
+.wf-segments {
+    display: flex;
+    gap: 0.25rem;
+    border-radius: 9px;
+    padding: 2px;
+    background: var(--wf-hover);
+    box-shadow: inset 0 0 0 1px var(--wf-line);
+}
+
+.wf-segments > button {
+    height: 1.75rem;
+    cursor: pointer;
+    border-radius: 7px;
+    padding: 0 0.625rem;
+    font-size: 12.5px;
+    font-weight: 550;
+    color: var(--wf-muted);
+}
+
+.wf-segments > button[aria-pressed='true'] {
+    background: var(--wf-panel);
+    color: var(--wf-text);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.08),
+        0 0 0 1px var(--wf-line);
+}
+
+.wf-kbd {
+    border-radius: 4px;
+    padding: 0 4px;
+    font-size: 11px;
+    box-shadow: 0 0 0 1px var(--wf-line);
+}
+
+/* The "Help shape ServerOS" survey: each step slides the way you're going,
+   options arrive a beat apart, and a missed answer gives a small shake. */
+.shape-forward-enter-active,
+.shape-back-enter-active {
+    transition:
+        opacity 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.shape-forward-leave-active,
+.shape-back-leave-active {
+    transition:
+        opacity 140ms ease-in,
+        transform 160ms ease-in;
+}
+
+.shape-forward-enter-from,
+.shape-back-leave-to {
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+.shape-forward-leave-to,
+.shape-back-enter-from {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.shape-forward-enter-active .shape-option {
+    animation: shape-option 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms + 80ms);
+}
+
+.shape-shake {
+    animation: shape-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.shape-check {
+    animation: mi-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both;
+}
+
+@keyframes shape-option {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@keyframes shape-shake {
+    20%,
+    60% {
+        transform: translateX(-4px);
+    }
+    40%,
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shape-forward-enter-active,
+    .shape-back-enter-active,
+    .shape-forward-leave-active,
+    .shape-back-leave-active {
+        transition: opacity 120ms linear;
+    }
+
+    .shape-forward-enter-from,
+    .shape-back-leave-to,
+    .shape-forward-leave-to,
+    .shape-back-enter-from {
+        transform: none;
+    }
+
+    .shape-forward-enter-active .shape-option,
+    .shape-shake,
+    .shape-check {
+        animation: none;
+    }
+}
+
+/* The coming-soon page arrives in a short stagger. */
+.cs-rise {
+    animation: cs-rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+}
+
+@keyframes cs-rise {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+        filter: blur(4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cs-rise {
+        animation: none;
+    }
+}
+
+@package-css 'site-docs.css';
+
+.dark .docs-landing {
+    /* The dashboard's own warm dark greys, so the docs match the panel;
+       only the accent stays the site's lighter cobalt. */
+    --ds-frame: #111111;
+    --ds-hover: #1c1c1c;
+    --ds-divider: #1c1c1c;
+    --ds-border: #232323;
+    --ds-border-stronger: #323232;
+    --ds-border-hover: #3a3a3a;
+    --ds-text: #f0efea;
+    --ds-text-secondary: #c3c1b8;
+    --ds-text-muted: #9d9b93;
+    --ds-text-faint: #87857e;
+    --ds-ring: #7fa8f5;
+    --ds-blue: #93bbfd;
+    --ds-blue-strong: #bcd0fb;
+    --ds-blue-bg: #1b2a45;
+    --ds-blue-border: #2f4c80;
+    --docs-quiet: var(--ds-text-muted);
+    --docs-card: #0a0a0a;
+    --docs-raised: #141414;
+    --docs-raised-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 2px rgb(0 0 0 / 0.4);
+    --docs-pill: var(--ds-hover);
+    --docs-icon: var(--ds-text-faint);
+}
+
+.docs-prose {
+    color: var(--ds-text-secondary);
+    font-size: 15.5px;
+    line-height: 1.75;
+
+    & > * + * {
+        margin-top: 1.1em;
+    }
+
+    & h2 {
+        margin-top: 2.2em;
+        scroll-margin-top: 96px;
+        color: var(--ds-text);
+        font-size: 22px;
+        font-weight: 500;
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+    }
+
+    & h3 {
+        margin-top: 1.8em;
+        scroll-margin-top: 96px;
+        color: var(--ds-text);
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    & h2:first-child,
+    & h3:first-child {
+        margin-top: 0;
+    }
+
+    & strong {
+        color: var(--ds-text);
+        font-weight: 500;
+    }
+
+    & a {
+        color: var(--ds-text);
+        font-weight: 500;
+        text-decoration: underline;
+        text-decoration-color: var(--ds-border-hover);
+        text-underline-offset: 4px;
+
+        &:hover {
+            text-decoration-color: var(--ds-text);
+        }
+    }
+
+    & ul,
+    & ol {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4em;
+        padding-left: 1.3em;
+    }
+
+    & ul {
+        list-style: disc;
+    }
+
+    & ol {
+        list-style: decimal;
+    }
+
+    & li::marker {
+        color: var(--ds-text-faint);
+    }
+
+    & :not(pre) > code {
+        padding: 0.12em 0.4em;
+        border-radius: 5px;
+        background: var(--ds-hover);
+        color: var(--ds-text);
+        font-family: var(--font-ui-mono, ui-monospace, monospace);
+        font-size: 0.86em;
+    }
+
+    & pre {
+        overflow-x: auto;
+        padding: 16px 18px;
+        border-radius: 12px;
+        background: #0c0c0e;
+        color: #e4e4e8;
+        font-family: var(--font-ui-mono, ui-monospace, monospace);
+        font-size: 13px;
+        line-height: 1.7;
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
+    }
+
+    /* Syntax colours (highlight.js), for the always-dark code panel */
+    & pre code {
+        & .hljs-comment,
+        & .hljs-quote {
+            color: #6e7383;
+            font-style: italic;
+        }
+
+        & .hljs-keyword,
+        & .hljs-built_in,
+        & .hljs-literal,
+        & .hljs-selector-tag,
+        & .hljs-type {
+            color: #7aa7ff;
+        }
+
+        & .hljs-string,
+        & .hljs-regexp,
+        & .hljs-addition {
+            color: #86e1b0;
+        }
+
+        & .hljs-number,
+        & .hljs-symbol,
+        & .hljs-bullet {
+            color: #f5b97a;
+        }
+
+        & .hljs-title,
+        & .hljs-section {
+            color: #c4b5fd;
+        }
+
+        /* In a shell, every command reads the same, built-in or not */
+        &.language-bash .hljs-built_in {
+            color: #c4b5fd;
+        }
+
+        & .hljs-attr,
+        & .hljs-attribute,
+        & .hljs-property,
+        & .hljs-name,
+        & .hljs-variable,
+        & .hljs-template-variable,
+        & .hljs-params {
+            color: #9cc6ff;
+        }
+
+        & .hljs-meta,
+        & .hljs-subst {
+            color: #a6a6b0;
+        }
+
+        & .hljs-deletion {
+            color: #fca5a5;
+        }
+
+        & .hljs-strong {
+            font-weight: 600;
+        }
+
+        & .hljs-emphasis {
+            font-style: italic;
+        }
+    }
+
+    /* A quote is a callout: a tinted panel with a blue rule */
+    & blockquote {
+        padding: 12px 16px;
+        border-left: 3px solid #3b7bff;
+        border-radius: 0 10px 10px 0;
+        background: color-mix(in srgb, #3b7bff 7%, transparent);
+        color: var(--ds-text-secondary);
+
+        & > * + * {
+            margin-top: 0.6em;
+        }
+    }
+
+    & table {
+        width: 100%;
+        overflow: hidden;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 12px;
+        font-size: 14px;
+        box-shadow: 0 0 0 1px var(--ds-divider);
+    }
+
+    & th {
+        padding: 10px 14px;
+        background: var(--ds-hover);
+        color: var(--ds-text-muted);
+        font-size: 12.5px;
+        font-weight: 500;
+        text-align: left;
+    }
+
+    & td {
+        padding: 10px 14px;
+        border-top: 1px solid var(--ds-divider);
+        vertical-align: top;
+    }
+
+    & hr {
+        border: 0;
+        border-top: 1px dashed var(--ds-border-hover);
+    }
+
+    & img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px var(--ds-divider);
+    }
+
+    /* AI app logos (images/docs/ai): small light tiles in the text, so the
+       black marks read in both themes. */
+    & img[src^='/images/docs/ai/'] {
+        display: inline-block;
+        width: 1.6em;
+        height: 1.6em;
+        padding: 0.3em;
+        margin-right: 0.3em;
+        vertical-align: -0.45em;
+        border-radius: 0.4em;
+        background: #fff;
+    }
+}
+
+/* Blog posts and changelog entries on the new site (with .docs-prose): the
+   pale page's ink greys, the brand's indigo for links and callouts, and
+   hairlines in place of the panel's tokens. */
+.docs-prose.site-prose {
+    color: #4f4f55;
+    font-size: 16.5px;
+    line-height: 1.75;
+
+    & h2 {
+        color: #27272a;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+    & h3 {
+        color: #27272a;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    & strong {
+        color: #27272a;
+        font-weight: 600;
+    }
+
+    & a {
+        color: #2106de;
+        text-decoration-color: rgb(33 6 222 / 0.3);
+
+        &:hover {
+            text-decoration-color: #2106de;
+        }
+    }
+
+    & li::marker {
+        color: #a1a1aa;
+    }
+
+    & :not(pre) > code {
+        background: rgb(39 39 42 / 0.06);
+        color: #27272a;
+    }
+
+    & pre {
+        border-radius: 10px;
+        background: #16161a;
+        box-shadow: 0 0 0 1px rgb(39 39 42 / 0.12);
+    }
+
+    & blockquote {
+        border-left-color: #1f5fe0;
+        border-radius: 0 8px 8px 0;
+        background: rgb(31 95 224 / 0.05);
+        color: #4f4f55;
+    }
+
+    & table {
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgb(39 39 42 / 0.1);
+    }
+
+    & th {
+        background: rgb(39 39 42 / 0.03);
+        color: #777880;
+    }
+
+    & td {
+        border-top-color: rgb(39 39 42 / 0.08);
+    }
+
+    & hr {
+        border-top: 1px solid rgb(39 39 42 / 0.08);
+    }
+
+    & img {
+        border-radius: 12px;
+        box-shadow:
+            0 0 0 1px rgb(39 39 42 / 0.1),
+            0 24px 48px -28px rgb(2 16 56 / 0.3);
+    }
+}
+
+@package-css 'admin-prose.css';
+
+/* A field that didn't pass: one short side-to-side shake. */
+@keyframes so-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-6px);
+    }
+    40% {
+        transform: translateX(5px);
+    }
+    60% {
+        transform: translateX(-3px);
+    }
+    80% {
+        transform: translateX(2px);
+    }
+}
+
+/*
+ * The panel's own field errors, in place of the browser's bubbles
+ * (lib/fieldErrors.ts): the field outlined red like the sign-in pages',
+ * and a plain message under it.
+ */
+[data-invalid='true'] {
+    border-color: var(--ds-red) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-red) 15%, transparent) !important;
+}
+
+.so-field-error {
+    /* Forms space their fields already (grid gaps), like InputError. */
+    margin-top: 0;
+    color: var(--ds-red);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.so-shake {
+    animation: so-shake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .so-shake {
+        animation: none;
+    }
+}
+
+/*
+ * The assistant's chat (AssistantPanel), in the segmented tabs' style:
+ * the input is sunk in like the tabs' track, while the send button,
+ * suggestions and your own messages are raised like the tabs. Answers get
+ * compact prose.
+ */
+.assistant-bubble,
+.assistant-key {
+    color: #151515;
+    background-color: #ffffff;
+    box-shadow:
+        rgb(0 0 0 / 0.08) 0 1px 2px,
+        rgb(0 0 0 / 0.06) 0 0 0 1px;
+}
+
+.assistant-key {
+    color: #6f6e69;
+    transition-property: color, background, box-shadow, scale, opacity;
+    transition-duration: 150ms;
+
+    &:hover:not(:disabled) {
+        color: #151515;
+    }
+
+    &:active:not(:disabled) {
+        scale: 0.96;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+    }
+}
+
+/* The input sits sunk into the page, like the track behind segmented tabs. */
+.assistant-input {
+    background-color: #ececea;
+    box-shadow:
+        rgb(0 0 0 / 0.06) 0 1px 2px inset,
+        rgb(0 0 0 / 0.06) 0 0 0 1px;
+    transition: box-shadow 150ms;
+
+    &:focus-within {
+        box-shadow:
+            rgb(0 0 0 / 0.06) 0 1px 2px inset,
+            rgb(0 0 0 / 0.16) 0 0 0 1px;
+    }
+}
+
+.dark .assistant-bubble,
+.dark .assistant-key {
+    color: #eeeeec;
+    background: linear-gradient(180deg, #1c1c1c 50%, #31312e);
+    box-shadow:
+        #2a2a2a 0 0.8px 0 inset,
+        rgb(255 255 255 / 0.1) 0 1px 2px -1px inset,
+        rgb(0 0 0 / 0.5) 0 2px 4px -1px;
+}
+
+.dark .assistant-key {
+    color: #989899;
+
+    &:hover:not(:disabled) {
+        color: #eeeeec;
+    }
+}
+
+.dark .assistant-input {
+    background-color: #0a0a0a;
+    box-shadow:
+        rgb(0 0 0 / 0.2) 0 2px 4px inset,
+        rgb(0 0 0 / 0.24) 0 0 0 1px;
+
+    &:focus-within {
+        box-shadow:
+            rgb(0 0 0 / 0.2) 0 2px 4px inset,
+            rgb(255 255 255 / 0.1) 0 0 0 1px;
+    }
+}
+
+/* "Reading the docs…" with a light sweeping across it. */
+.assistant-thinking {
+    color: transparent;
+    background: linear-gradient(
+            100deg,
+            var(--ds-text-faint) 35%,
+            var(--ds-text) 50%,
+            var(--ds-text-faint) 65%
+        )
+        0 0 / 250% 100%;
+    background-clip: text;
+    animation: assistant-sweep 1.6s linear infinite;
+}
+
+@keyframes assistant-sweep {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: -150% 0;
+    }
+}
+
+/* Ask AI's light, from the bottom, coloured by how it's going (as on Fixes).
+   Registered as a colour so it fades from one to the next. */
+@property --assistant-glow {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+}
+
+.assistant-glow {
+    background: radial-gradient(
+        140% 55% at 75% 108%,
+        var(--assistant-glow),
+        transparent 70%
+    );
+    transition: --assistant-glow 600ms ease;
+}
+
+/* The same light on the page while Ask AI works: in from the edges, most
+   from the right (where the chat is) and the bottom, breathing slowly. */
+.assistant-page-glow {
+    opacity: 0;
+    transition: opacity 700ms ease;
+    background:
+        radial-gradient(
+            60% 90% at 100% 60%,
+            rgb(var(--assistant-page-glow) / 0.16),
+            transparent 70%
+        ),
+        radial-gradient(
+            90% 35% at 70% 100%,
+            rgb(var(--assistant-page-glow) / 0.14),
+            transparent 70%
+        );
+    box-shadow:
+        inset 0 0 0 1px rgb(var(--assistant-page-glow) / 0.28),
+        inset 0 0 40px rgb(var(--assistant-page-glow) / 0.1);
+}
+
+.assistant-page-glow.is-on {
+    opacity: 1;
+    animation: assistant-page-breathe 3.2s ease-in-out 700ms infinite;
+}
+
+@keyframes assistant-page-breathe {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* A step that's going on: a dot that breathes in the glow's colour. */
+.assistant-pulse {
+    background: rgb(0 229 214);
+    box-shadow: 0 0 8px rgb(0 229 214 / 0.6);
+    animation: assistant-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes assistant-pulse {
+    50% {
+        opacity: 0.4;
+        transform: scale(0.75);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .assistant-thinking {
+        animation: none;
+        color: var(--ds-text-muted);
+    }
+    .assistant-pulse,
+    .assistant-page-glow.is-on {
+        animation: none;
+    }
+}
+
+.assistant-prose {
+    overflow-wrap: anywhere;
+
+    & > * + * {
+        margin-top: 0.75em;
+    }
+
+    & strong {
+        font-weight: 500;
+        color: var(--ds-text);
+    }
+
+    & a:not([href]) {
+        color: inherit;
+    }
+
+    & a[href] {
+        color: var(--ds-blue);
+        text-decoration: underline;
+        text-decoration-color: color-mix(
+            in srgb,
+            var(--ds-blue) 40%,
+            transparent
+        );
+        text-underline-offset: 3px;
+
+        &:hover {
+            text-decoration-color: currentColor;
+        }
+    }
+
+    & h1,
+    & h2,
+    & h3,
+    & h4 {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ds-text);
+    }
+
+    & ul,
+    & ol {
+        padding-left: 1.25em;
+
+        & > li + li {
+            margin-top: 0.35em;
+        }
+    }
+
+    & ul {
+        list-style: disc;
+    }
+
+    & ol {
+        list-style: decimal;
+    }
+
+    & li::marker {
+        color: var(--ds-text-faint);
+    }
+
+    & li > ul,
+    & li > ol {
+        margin-top: 0.35em;
+    }
+
+    & :not(pre) > code {
+        padding: 1px 5px;
+        border-radius: 5px;
+        background: var(--ds-hover);
+        color: var(--ds-text);
+        font-family: var(--font-ui-mono, ui-monospace, monospace);
+        font-size: 12px;
+    }
+
+    & pre {
+        overflow-x: auto;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--ds-code, var(--ds-hover));
+        box-shadow: 0 0 0 1px var(--ds-border);
+        font-family: var(--font-ui-mono, ui-monospace, monospace);
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--ds-text);
+    }
+
+    & table {
+        width: 100%;
+        font-size: 12px;
+        border-collapse: collapse;
+
+        & th,
+        & td {
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--ds-divider);
+            text-align: left;
+        }
+    }
+
+    & hr {
+        border-color: var(--ds-divider);
+    }
+}
+
+/*
+ * No hardware acceleration (partials/gpu-check marks the page): the looping
+ * backdrops, tile floors and scanners are drawn on the CPU every frame there,
+ * so they hold still, as they do for reduced motion.
+ */
+.no-gpu :is(.so-beams, .so-row, .so-hover-wrap, .so-scan) {
+    animation: none !important;
+    will-change: auto !important;
+}
+
+/* A dialog's view swapping for another (MorphHeight): the old one blurs
+   out, the new one settles in while the height glides between them. */
+.morph-enter-active {
+    transition:
+        opacity 200ms ease-out,
+        filter 200ms ease-out,
+        scale 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.morph-leave-active {
+    transition:
+        opacity 120ms ease-in,
+        filter 120ms ease-in;
+}
+
+.morph-enter-from {
+    opacity: 0;
+    filter: blur(4px);
+    scale: 0.985;
+}
+
+.morph-leave-to {
+    opacity: 0;
+    filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .morph-enter-active,
+    .morph-leave-active {
+        transition: opacity 120ms ease;
+    }
+
+    .morph-enter-from,
+    .morph-leave-to {
+        filter: none;
+        scale: none;
+    }
+}
+
+/* The service console (ServiceShow): a terminal sliding up from the
+   bottom over a dimmed page. */
+.console-sheet-enter-active .console-panel {
+    transition: translate 460ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.console-sheet-leave-active .console-panel {
+    transition: translate 260ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+.console-sheet-enter-active .console-scrim,
+.console-sheet-leave-active .console-scrim {
+    transition: opacity 260ms ease;
+}
+
+.console-sheet-enter-active,
+.console-sheet-leave-active {
+    transition: opacity 1ms 460ms;
+}
+
+.console-sheet-enter-from .console-panel,
+.console-sheet-leave-to .console-panel {
+    translate: 0 calc(100% + 16px);
+}
+
+.console-sheet-enter-from .console-scrim,
+.console-sheet-leave-to .console-scrim {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .console-sheet-enter-active .console-panel,
+    .console-sheet-leave-active .console-panel {
+        transition: opacity 150ms ease;
+    }
+
+    .console-sheet-enter-from .console-panel,
+    .console-sheet-leave-to .console-panel {
+        translate: none;
+        opacity: 0;
+    }
+}
+
+/*
+ * Light and dark pictures on the marketing site: a light screenshot and its
+ * dark partner sit side by side and only one shows; light screenshots
+ * without one are turned dark in place (inverted, hues kept), so a dark page
+ * never has a white dashboard in it.
+ */
+html:not(.dark) .when-dark,
+html.dark .when-light {
+    display: none !important;
+}
+
+/* Dark dashboard shots sit on a black page in a dark frame: lifted a little
+   so their detail reads, without changing what the product looks like. */
+html.dark img.when-dark {
+    filter: brightness(1.5) contrast(0.9);
+}
+
+html.dark .dark-invert {
+    filter: invert(0.9) hue-rotate(180deg);
+}
+
+/* White backdrops (the pricing arch, the fields and skies) go to the dark
+   page's own black, so their edges don't show. */
+html.dark .dark-art {
+    filter: invert(0.96) hue-rotate(180deg);
+}
+
+/* The ServerOS mark is white, inverted to black on light pages: on a dark
+   page it stays white (a part that's dark on its own handles its own). */
+html.dark img[src$='serveros-logo.svg'].invert:not(.dark .dark *) {
+    filter: none;
+}
+
+/* Black marks drawn as pictures (OpenAI, Codex) turn white on a dark page. */
+html.dark
+    :is(img[src$='agents/openai.svg'], img[src$='agents/codex.svg']):not(
+        .dark .dark *
+    ) {
+    filter: invert(1);
+}
+
+@package-css 'site-nav.css';

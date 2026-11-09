@@ -1,0 +1,33 @@
+# What the self-hosted image never needs from a checkout (Docker reads
+# this file for docker/self-hosted/Dockerfile only).
+.git
+.github
+.claude
+.agents
+.cursor
+.idea
+.vscode
+.env
+.env.*
+!.env.example
+auth.json
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+public/releases
+bootstrap/ssr
+bootstrap/cache/*.php
+storage
+tests
+# Internal notes and tooling the panel never reads.
+docs
+scripts
+skills-lock.json
+database/database.sqlite
+docker/dev
+docker/daemon-local
+docker/test-node
+*.log
+.DS_Store

@@ -1,0 +1,159 @@
+# ServerOS, self-hosted: the panel with PostgreSQL 16 and Redis, from one
+# image. The install script (docker/self-hosted/install.sh) puts this file and a
+# .env next to it in /opt/serveros; see docs/self-hosting.md.
+#
+#   docker compose up -d       start, or apply a new image or .env
+#   docker compose logs -f     what it's doing
+#
+# Settings come from .env next to this file. SERVEROS_DOMAIN, ACME_EMAIL,
+# APP_KEY, DB_PASSWORD and DAEMON_GATEWAY_SECRET are required.
+name: serveros
+
+x-panel: &panel
+    image: ${SERVEROS_IMAGE:-ghcr.io/serveroshq/panel:latest}
+    restart: unless-stopped
+    env_file:
+        - path: .env
+          required: false
+    environment: &panel-env
+        SERVEROS_EDITION: self-hosted
+        SERVEROS_DOMAIN: ${SERVEROS_DOMAIN:?Set SERVEROS_DOMAIN in .env}
+        APP_NAME: ${APP_NAME:-ServerOS}
+        APP_ENV: production
+        APP_DEBUG: 'false'
+        APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
+        APP_URL: https://${SERVEROS_DOMAIN}
+        APP_DOMAIN: ${SERVEROS_DOMAIN}
+        SESSION_DOMAIN: .${SERVEROS_DOMAIN}
+        SESSION_SECURE_COOKIE: 'true'
+        SESSION_DRIVER: database
+        DB_CONNECTION: pgsql
+        DB_HOST: db
+        DB_PORT: '5432'
+        DB_DATABASE: serveros
+        DB_USERNAME: serveros
+        DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+        REDIS_CLIENT: phpredis
+        REDIS_HOST: redis
+        REDIS_PORT: '6379'
+        CACHE_STORE: redis
+        QUEUE_CONNECTION: redis
+        LOG_CHANNEL: stderr
+        # The marketing pages' server rendering isn't needed here.
+        INERTIA_SSR_ENABLED: 'false'
+        # Machines: the install command, and the gateway they connect to.
+        DAEMON_INSTALL_READY: 'true'
+        DAEMON_COMMANDS_ENABLED: 'true'
+        DAEMON_GATEWAY_HOST: ${SERVEROS_DOMAIN}:${GATEWAY_PORT:-8443}
+        DAEMON_GATEWAY_INTERNAL_URL: http://gateway:8090
+        DAEMON_GATEWAY_SECRET: ${DAEMON_GATEWAY_SECRET:?Set DAEMON_GATEWAY_SECRET in .env}
+        # The anonymous daily install ping (docs/self-hosting.md, "What your
+        # install sends"): SERVEROS_TELEMETRY=false in .env turns it off.
+        SERVEROS_TELEMETRY: ${SERVEROS_TELEMETRY:-true}
+    volumes:
+        - storage:/app/storage
+    depends_on:
+        db:
+            condition: service_healthy
+        redis:
+            condition: service_healthy
+
+services:
+    web:
+        <<: *panel
+        command: web
+        environment:
+            <<: *panel-env
+            ACME_EMAIL: ${ACME_EMAIL:-}
+            CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-}
+        ports:
+            - '${HTTP_PORT:-80}:80'
+            - '${HTTPS_PORT:-443}:443'
+            - '${HTTPS_PORT:-443}:443/udp'
+        volumes:
+            - storage:/app/storage
+            - caddy-data:/data
+            - caddy-config:/config
+            - gateway:/gateway
+        networks:
+            default:
+                # The gateway reaches the panel by its own name, here.
+                aliases:
+                    - ${SERVEROS_DOMAIN}
+        healthcheck:
+            test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:8081/up']
+            interval: 10s
+            timeout: 5s
+            start_period: 120s
+            retries: 6
+
+    queue:
+        <<: *panel
+        command: queue
+        depends_on:
+            web:
+                condition: service_healthy
+
+    scheduler:
+        <<: *panel
+        command: scheduler
+        depends_on:
+            web:
+                condition: service_healthy
+
+    gateway:
+        image: ${SERVEROS_IMAGE:-ghcr.io/serveroshq/panel:latest}
+        restart: unless-stopped
+        command: gateway
+        environment:
+            GATEWAY_LISTEN: 0.0.0.0:8443
+            # Only on this network: the panel sends machines their jobs here.
+            GATEWAY_INTERNAL: 0.0.0.0:8090
+            GATEWAY_PANEL_URL: https://${SERVEROS_DOMAIN}
+            # Set when the panel's certificate isn't a public one (local_certs).
+            GATEWAY_PANEL_CA: ${GATEWAY_PANEL_CA:-}
+            DAEMON_GATEWAY_SECRET: ${DAEMON_GATEWAY_SECRET:?Set DAEMON_GATEWAY_SECRET in .env}
+            RUST_LOG: ${GATEWAY_LOG:-info}
+        ports:
+            - '${GATEWAY_PORT:-8443}:8443'
+        volumes:
+            - gateway:/gateway:ro
+            - caddy-data:/data:ro
+        depends_on:
+            web:
+                condition: service_healthy
+
+    db:
+        image: postgres:16-bookworm
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: serveros
+            POSTGRES_USER: serveros
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+        volumes:
+            - database:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U serveros -d serveros']
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    redis:
+        image: redis:7-bookworm
+        restart: unless-stopped
+        command: ['redis-server', '--appendonly', 'yes', '--save', '60', '1000']
+        volumes:
+            - redis:/data
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 5s
+            timeout: 3s
+            retries: 20
+
+volumes:
+    storage:
+    database:
+    redis:
+    caddy-data:
+    caddy-config:
+    gateway:

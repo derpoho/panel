@@ -1,0 +1,47 @@
+# The self-hosted panel's web server: FrankenPHP (Caddy with PHP built in).
+#
+# The panel answers on SERVEROS_DOMAIN and each workspace on its own
+# subdomain of it (acme.panel.example.com), so DNS needs both
+# SERVEROS_DOMAIN and *.SERVEROS_DOMAIN pointing here. Each name gets its
+# own Let's Encrypt certificate the first time it's visited (on-demand
+# TLS), once the panel says the name is its own: /api/internal/tls-check,
+# which only answers on the loopback address below.
+{
+	skip_install_trust
+	email {$ACME_EMAIL}
+	{$CADDY_GLOBAL_OPTIONS}
+
+	on_demand_tls {
+		ask http://127.0.0.1:8081/api/internal/tls-check
+	}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+(panel) {
+	root * /app/public
+	encode zstd br gzip
+	php_server
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	import panel
+}
+
+http:// {
+	redir https://{host}{uri} permanent
+}
+
+# Only from inside this container: the certificate check above and the
+# health check.
+http://127.0.0.1:8081 {
+	bind 127.0.0.1
+	import panel
+}
+
+{$CADDY_EXTRA_CONFIG}
