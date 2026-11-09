@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Composer and npm get added here when the panel's code lands.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Wait a week before taking a new release, so a compromised one has time
+    # to be noticed and pulled.
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "CI:"

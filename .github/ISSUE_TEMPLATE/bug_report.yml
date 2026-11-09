@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in the panel doesn't work the way it should.
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. If it's a security problem, stop here and follow [SECURITY.md](https://github.com/serveroshq/panel/blob/main/SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: panel-version
+    attributes:
+      label: Panel version
+      description: Shown in Settings, or the commit you're running.
+    validations:
+      required: true
+  - type: input
+    id: daemon-version
+    attributes:
+      label: Daemon version
+      description: Output of `serverosd --version`, if a machine is involved.
+  - type: input
+    id: environment
+    attributes:
+      label: Where it runs
+      description: OS and version of the panel's server, browser if it's a UI bug.
+      placeholder: Ubuntu 24.04, Firefox 140
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Anything relevant from the panel or daemon logs. Remove passwords, tokens and IP addresses you don't want public.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true
+        - label: I removed secrets and private details from what I pasted.
+          required: true
