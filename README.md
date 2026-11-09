@@ -1,4 +1,18 @@
-# ServerOS panel
+<h1 align="center">ServerOS panel</h1>
+
+<p align="center">One place to run the Linux servers you already own.</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/serveroshq/panel?style=flat-square&color=2563eb"></a>
+  <a href="https://github.com/serveroshq/panel/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/serveroshq/panel/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="CODE_OF_CONDUCT.md"><img alt="Contributor Covenant v2.1 adopted" src="https://img.shields.io/badge/Contributor%20Covenant-v2.1%20adopted-ff69b4?style=flat-square"></a>
+  <a href="https://discord.gg/serveros"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join%20us-5865f2?style=flat-square&logo=discord&logoColor=white"></a>
+  <a href="https://www.linkedin.com/company/serveros"><img alt="Follow ServerOS on LinkedIn" src="https://img.shields.io/badge/Follow-ServerOS-0a66c2?style=flat-square&logo=linkedin&logoColor=white"></a>
+</p>
+
+<p align="center">
+  <a href="https://serveros.com"><img alt="The ServerOS dashboard: machines, average CPU, last backup and each machine's services" src=".github/assets/dashboard.png" width="900"></a>
+</p>
 
 The open source panel behind [ServerOS](https://serveros.com): one place to run the Linux servers you already own. Connect a VPS with one command, then deploy apps, sites and databases, keep an eye on them, back them up and fix them, without living in a terminal.
 
