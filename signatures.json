@@ -1,3 +1,12 @@
 {
-  "signatures": []
+  "signatures": [
+    {
+      "id": 246839232,
+      "login": "wrrfsub",
+      "signed_at": "2026-11-11T13:20:04Z",
+      "pull_request": 27,
+      "comment_id": 6796923431,
+      "cla_version": "1.0"
+    }
+  ]
 }
