@@ -191,6 +191,9 @@ test('GitHub’s manifest code is turned into the app’s settings when the stat
         ->and($app->slug)->toBe('serveros-panel')
         ->and($app->client_secret)->toBe('made-secret')
         ->and($app->webhook_secret)->toBe('made-hook');
+    // GitHub answers a [] body with a 422, so the conversion sends none.
+    Http::assertSent(fn ($request) => str_ends_with($request->url(), '/app-manifests/abc123/conversions')
+        && $request->method() === 'POST' && $request->body() === '');
     expect(DB::table('activities')->where('action', 'github.app_set_up')->where('workspace_id', $workspace->id)->exists())->toBeTrue();
 });
 

@@ -10,6 +10,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 final class GitHubApp
@@ -98,12 +99,18 @@ final class GitHubApp
         }
 
         try {
-            $response = $this->client()->post(self::API.'/app-manifests/'.rawurlencode($code).'/conversions');
-        } catch (ConnectionException) {
+            // No body at all: post() would send [], which GitHub turns down
+            // with a 422, and the code only works once.
+            $response = $this->client()->send('POST', self::API.'/app-manifests/'.rawurlencode($code).'/conversions');
+        } catch (ConnectionException $e) {
+            Log::warning('GitHub App manifest conversion: GitHub didn’t answer.', ['error' => $e->getMessage()]);
+
             return null;
         }
         $app = $response->json();
         if (! $response->successful() || ! is_array($app)) {
+            Log::warning('GitHub App manifest conversion failed.', ['status' => $response->status(), 'message' => $response->json('message')]);
+
             return null;
         }
         foreach (['slug', 'client_id', 'client_secret', 'pem'] as $required) {
