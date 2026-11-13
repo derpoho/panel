@@ -391,7 +391,7 @@ const dialogItems = computed<GroupDialogItem<string>[]>(() => {
             label:
                 service.label ?? service.app ?? service.found ?? service.name,
             detail: `${service.manager} · ${service.kind}${service.ports.length ? ` · ${service.ports.map((p) => `:${p}`).join(' ')}` : ''}`,
-            groupName: inGroup.get(service.key) ?? null,
+            groupName: inGroup.get(memberKey(service)) ?? null,
         }));
 });
 
