@@ -292,7 +292,7 @@ serveros-panel upgrade
 
 That backs up first, pulls the newest image, and restarts on it. The database migrations run as the panel starts. `serveros-panel upgrade 1.2.0` moves to a version of your choosing (it's kept in `.env` as `SERVEROS_IMAGE`, so a later `serveros-panel upgrade` stays on it until you choose another).
 
-You can also update from the panel. When a new release is out, the workspace owner sees it in Settings › General, with an Update button. Once you click it, the server starts the update within a minute. It runs `serveros-panel upgrade` for you, so it backs up first, and the panel is unavailable for a minute or two while it restarts. Once it's back, the workspace's machines are sent the newest daemon, unless their machine policy updates them by itself already.
+You can also update from the panel. When a new release is out, Settings › General and the home page say so, with an Update button. The button shows for the install's first account, in the workspaces it owns; to let someone else update, run `serveros-panel artisan admin:grant sam@example.com`. Once you click it, the server starts the update within a minute. It runs `serveros-panel upgrade` for you, so it backs up first, and the panel is unavailable for a minute or two while it restarts. Once it's back, the workspace's machines are sent the newest daemon, unless their machine policy updates them by itself already.
 
 The button needs the updater, which the install's cron runs every minute (`/etc/cron.d/serveros-panel`, logging to `/var/log/serveros-panel-update.log`). An install from before the updater gets it the night after its next `serveros-panel upgrade`, or right away with:
 
@@ -301,6 +301,8 @@ serveros-panel upgrade && serveros-panel schedule
 ```
 
 Running the install command again brings it up to date too, keeping your settings, but without the backup first.
+
+What's new and what's fixed in each version is in the [release notes](https://github.com/serveroshq/panel/releases).
 
 On a plain server, back up first (below), then in the panel's folder, the code as the user that owns it and `php artisan` as the web server's user:
 

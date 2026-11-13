@@ -85,6 +85,14 @@ npm run build                  # the frontend build
 
 Migrations have to run on SQLite, PostgreSQL and MySQL. Tests never touch your own database: phpunit.xml points them at SQLite in memory.
 
+## Translations
+
+The panel speaks English, Spanish, German and Hindi. Every other language lives in `lang/{code}.json`, keyed by the English text, and [lang/README.md](../lang/README.md) says how to add a string. Fixes to the translations are welcome as small pull requests.
+
+## The daemon
+
+The daemon that runs on each server is [serveroshq/daemon](https://github.com/serveroshq/daemon), in Rust. The same rules apply there: small fixes as pull requests, an issue first for anything bigger.
+
 ## Code of Conduct
 
 Everyone taking part agrees to our [Code of Conduct](CODE_OF_CONDUCT.md).
