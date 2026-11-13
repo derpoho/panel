@@ -23,6 +23,14 @@
       "pull_request": 45,
       "comment_id": 6827233335,
       "cla_version": "1.0"
+    },
+    {
+      "id": 100739943,
+      "login": "HEOJUNFO",
+      "signed_at": "2026-11-13T05:06:17Z",
+      "pull_request": 47,
+      "comment_id": 6844692523,
+      "cla_version": "1.0"
     }
   ]
 }
