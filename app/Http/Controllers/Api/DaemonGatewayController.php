@@ -22,6 +22,7 @@ use App\Support\Machines\CloudflareTunnel;
 use App\Support\Machines\DaemonUpdateNotices;
 use App\Support\Machines\MachineMetadata;
 use App\Support\Machines\PackageUpdates;
+use App\Support\Machines\StaleServices;
 use App\Support\Projects\ProjectData;
 use App\Support\Projects\ProjectLinks;
 use App\Support\Projects\ProjectNetwork;
@@ -235,6 +236,7 @@ class DaemonGatewayController extends Controller
                         if ($state === 'succeeded' && in_array($job->kind, PackageUpdates::KINDS, true)) {
                             PackageUpdates::ingest($job);
                         }
+                        StaleServices::ingest($job);
                     }
 
                     if ($job->kind === 'backup_to') {

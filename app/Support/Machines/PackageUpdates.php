@@ -108,6 +108,9 @@ final class PackageUpdates
         if (array_key_exists('reboot_required', $result)) {
             $changes['reboot_required'] = (bool) $result['reboot_required'];
         }
+        if (($restarts = StaleServices::fromResult($result)) !== null) {
+            $changes['restarts'] = $restarts;
+        }
         if (is_array($result['held'] ?? null)) {
             $held = array_values(array_unique(array_map(fn (string $n) => mb_substr($n, 0, 200), array_filter($result['held'], 'is_string'))));
             sort($held);
@@ -183,13 +186,14 @@ final class PackageUpdates
         return $out;
     }
 
-    /** @return array{checkedAt: string|null, complete: bool, rebootRequired: bool, held: list<string>, os: string|null, packages: list<array{name: string, from: string|null, to: string, security: bool, arch: string|null}>} */
+    /** @return array{checkedAt: string|null, complete: bool, rebootRequired: bool, restarts: array<string, mixed>|null, held: list<string>, os: string|null, packages: list<array{name: string, from: string|null, to: string, security: bool, arch: string|null}>} */
     public static function snapshot(Machine $machine): array
     {
         return [
             'checkedAt' => $machine->updates_checked_at?->toIso8601String(),
             'complete' => $machine->updates_complete,
-            'rebootRequired' => $machine->reboot_required,
+            'rebootRequired' => $machine->needsReboot(),
+            'restarts' => $machine->restarts,
             'held' => $machine->held_packages ?? [],
             'os' => self::osName($machine),
             'packages' => array_values(MachinePackageUpdate::query()->where('machine_id', $machine->id)

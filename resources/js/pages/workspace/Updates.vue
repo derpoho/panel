@@ -126,6 +126,15 @@ const summaryLine = computed(() => {
                   }),
         );
     }
+    if (s.restartServices) {
+        parts.push(
+            s.restartServices === 1
+                ? trans('1 machine has services to restart.')
+                : trans(':count machines have services to restart.', {
+                      count: String(s.restartServices),
+                  }),
+        );
+    }
     return parts.join(' ');
 });
 
@@ -839,6 +848,19 @@ const rowButton =
                                     v-if="machine.rebootRequired"
                                     class="hidden text-(--ds-amber) sm:inline"
                                     >{{ $t('Restart needed') }}</span
+                                >
+                                <span
+                                    v-else-if="machine.staleServices"
+                                    class="hidden text-(--ds-amber) sm:inline"
+                                    >{{
+                                        machine.staleServices === 1
+                                            ? $t('1 service to restart')
+                                            : $t(':count services to restart', {
+                                                  count: String(
+                                                      machine.staleServices,
+                                                  ),
+                                              })
+                                    }}</span
                                 >
                                 <span
                                     v-if="machine.held.length"

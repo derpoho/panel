@@ -20,6 +20,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import AppButton from '@/components/workspace/AppButton.vue';
+import StaleServicesNote from '@/components/machines/StaleServicesNote.vue';
+import type { Restarts } from '@/components/machines/StaleServicesNote.vue';
 import TickBox from '@/components/workspace/TickBox.vue';
 
 const props = defineProps<{ machineId: number; machineName: string }>();
@@ -35,6 +37,7 @@ type Report = {
     manager: string | null;
     packages: Package[];
     rebootRequired: boolean;
+    restarts?: Restarts | null;
     applied: boolean;
     held?: string[];
 };
@@ -42,6 +45,7 @@ type Snapshot = {
     checkedAt: string | null;
     complete: boolean;
     rebootRequired: boolean;
+    restarts: Restarts | null;
     held: string[];
     packages: Package[];
     canPick: boolean;
@@ -53,6 +57,10 @@ type JobStatus = {
     log: string[];
     error: { message?: string; next_step?: string } | null;
     report: Report | null;
+    restarts: {
+        failed: { unit: string; message: string | null }[];
+        after: Restarts | null;
+    } | null;
 };
 
 type Step =
@@ -68,6 +76,7 @@ const report = ref<Report | null>(null);
 const log = ref<string[]>([]);
 const error = ref<string | null>(null);
 const installedSecurityOnly = ref(false);
+const doing = ref<'install' | 'restart'>('install');
 const refreshing = ref(false);
 const checkedAt = ref<string | null>(null);
 const held = ref<string[]>([]);
@@ -199,6 +208,7 @@ async function check(): Promise<void> {
             manager: null,
             packages: kept.packages,
             rebootRequired: kept.rebootRequired,
+            restarts: kept.restarts,
             applied: false,
         };
         selected.value = kept.packages.map((p) => p.name);
@@ -248,6 +258,7 @@ async function install(): Promise<void> {
         packages.length === security.value.length &&
         security.value.every((p) => packages.includes(p.name));
     step.value = 'installing';
+    doing.value = 'install';
     installedSecurityOnly.value = onlySecurity;
     error.value = null;
     log.value = [];
@@ -268,6 +279,49 @@ async function install(): Promise<void> {
                 machineName: String(props.machineName),
             }),
         );
+    } catch (cause) {
+        if (!active) return;
+        error.value = (cause as Error).message;
+        step.value = 'failed';
+    }
+}
+
+async function restartServices(): Promise<void> {
+    const before = report.value;
+    step.value = 'installing';
+    doing.value = 'restart';
+    error.value = null;
+    log.value = [];
+    try {
+        const jobId = await post('updates/restart');
+        if (!jobId) throw new Error('Couldn’t start the restart.');
+        const status = await follow(jobId, (s) => (log.value = s.log));
+        if (status.state !== 'succeeded') throw new Error(failure(status));
+        const after = status.restarts?.after ?? null;
+        if (before) {
+            report.value = {
+                ...before,
+                restarts: after,
+                rebootRequired: after
+                    ? after.reboot.length > 0
+                    : before.rebootRequired,
+            };
+        }
+        step.value = 'done';
+        const failed = status.restarts?.failed ?? [];
+        if (failed.length) {
+            toast.error(
+                trans('These didn’t come back up: :units', {
+                    units: failed.map((f) => f.unit).join(', '),
+                }),
+            );
+        } else {
+            toast.success(
+                trans('Services restarted on :machineName.', {
+                    machineName: String(props.machineName),
+                }),
+            );
+        }
     } catch (cause) {
         if (!active) return;
         error.value = (cause as Error).message;
@@ -495,8 +549,14 @@ onBeforeUnmount(() => {
                         )
                     }}
                 </p>
+                <StaleServicesNote
+                    v-if="report.restarts"
+                    :restarts="report.restarts"
+                    :busy="refreshing"
+                    @restart="restartServices"
+                />
                 <p
-                    v-if="report.rebootRequired"
+                    v-else-if="report.rebootRequired"
                     class="text-[13px]/5 text-(--ds-amber)"
                 >
                     {{
@@ -575,11 +635,15 @@ onBeforeUnmount(() => {
                         aria-hidden="true"
                     />
                     <span class="font-medium">{{
-                        step === 'installing'
-                            ? installedSecurityOnly
-                                ? $t('Installing security updates…')
-                                : 'Installing updates…'
-                            : $t('Updates installed')
+                        doing === 'restart'
+                            ? step === 'installing'
+                                ? $t('Restarting services…')
+                                : $t('Services restarted')
+                            : step === 'installing'
+                              ? installedSecurityOnly
+                                  ? $t('Installing security updates…')
+                                  : 'Installing updates…'
+                              : $t('Updates installed')
                     }}</span>
                     <span
                         v-if="step === 'installing'"
@@ -591,8 +655,13 @@ onBeforeUnmount(() => {
                     ref="logBox"
                     class="max-h-64 min-h-24 overflow-auto rounded-[10px] bg-(--ds-code) px-3.5 py-3 font-ui-mono text-[11px]/4.5 whitespace-pre-wrap text-(--ds-text-secondary)"
                     >{{ log.join('\n') || $t('Starting…') }}</pre>
+                <StaleServicesNote
+                    v-if="step === 'done' && report?.restarts"
+                    :restarts="report.restarts"
+                    @restart="restartServices"
+                />
                 <p
-                    v-if="step === 'done' && report?.rebootRequired"
+                    v-else-if="step === 'done' && report?.rebootRequired"
                     class="text-[13px]/5 text-(--ds-amber)"
                 >
                     {{

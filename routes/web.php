@@ -263,6 +263,7 @@ Route::domain('{workspace:slug}.'.config('app.domain'))
         Route::get('machines/{machine}/disk-usage/{job}', [MachineDiskUsageController::class, 'show'])->name('workspace.machines.disk-usage.show');
         Route::post('machines/{machine}/updates/check', [MachineUpdatesController::class, 'check'])->middleware('throttle:10,1')->name('workspace.machines.updates.check');
         Route::post('machines/{machine}/updates', [MachineUpdatesController::class, 'install'])->middleware('throttle:5,1')->name('workspace.machines.updates.install');
+        Route::post('machines/{machine}/updates/restart', [MachineUpdatesController::class, 'restart'])->middleware('throttle:5,1')->name('workspace.machines.updates.restart');
         Route::get('machines/{machine}/updates', [MachineUpdatesController::class, 'snapshot'])->name('workspace.machines.updates.snapshot');
         Route::get('machines/{machine}/updates/{job}', [MachineUpdatesController::class, 'show'])->name('workspace.machines.updates.show');
         Route::get('updates', [UpdatesController::class, 'index'])->name('workspace.updates.index');

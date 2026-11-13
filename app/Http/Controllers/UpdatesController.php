@@ -14,6 +14,7 @@ use App\Support\DaemonJobQueue;
 use App\Support\Machines\PackageHolds;
 use App\Support\Machines\PackageRollouts;
 use App\Support\Machines\PackageUpdates;
+use App\Support\Machines\StaleServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -139,7 +140,8 @@ class UpdatesController extends Controller
             'machines' => $rows->pluck('machine_id')->unique()->count(),
             'total' => $machines->count(),
             'unchecked' => $machines->count() - $checked->count(),
-            'rebootRequired' => $machines->where('reboot_required', true)->count(),
+            'rebootRequired' => $machines->filter(fn (Machine $m) => $m->needsReboot())->count(),
+            'restartServices' => $machines->filter(fn (Machine $m) => StaleServices::count($m) > 0)->count(),
             'checkedAt' => $checked->min('updates_checked_at')?->toIso8601String(),
             'newestCheck' => $checked->max('updates_checked_at')?->toIso8601String(),
         ];
@@ -159,7 +161,8 @@ class UpdatesController extends Controller
             'groupId' => $machine->machine_group_id,
             'updates' => $machine->updates_count,
             'security' => $machine->security_updates_count,
-            'rebootRequired' => $machine->reboot_required,
+            'rebootRequired' => $machine->needsReboot(),
+            'staleServices' => StaleServices::count($machine),
             'checkedAt' => $machine->updates_checked_at?->toIso8601String(),
             'complete' => $machine->updates_complete,
             'held' => $machine->held_packages ?? [],

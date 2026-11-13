@@ -77,7 +77,7 @@ final class ListPackageUpdates extends Tool
                 'machinesWithUpdates' => $rows->pluck('machine_id')->unique()->count(),
                 'machines' => $machines->count(),
                 'neverChecked' => $machines->count() - $checked->count(),
-                'rebootRequired' => $machines->where('reboot_required', true)->count(),
+                'rebootRequired' => $machines->filter(fn ($m) => $m->needsReboot())->count(),
                 'oldestCheck' => $checked->min('updates_checked_at')?->toIso8601String(),
             ],
             'total' => $packages->count(),

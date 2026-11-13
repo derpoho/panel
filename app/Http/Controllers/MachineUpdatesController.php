@@ -11,6 +11,7 @@ use App\Support\Audit\Audited;
 use App\Support\Audit\NotAudited;
 use App\Support\DaemonJobQueue;
 use App\Support\Machines\PackageUpdates;
+use App\Support\Machines\StaleServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -83,6 +84,34 @@ class MachineUpdatesController extends Controller
         return $response;
     }
 
+    /** Restart the services still running files an update replaced, so it applies without a reboot. */
+    #[Audited]
+    public function restart(Request $request, Workspace $workspace, Machine $machine, DaemonJobQueue $queue): JsonResponse
+    {
+        $this->authorize($workspace, $machine);
+        $data = $request->validate([
+            'include' => ['sometimes', 'array', 'max:20'],
+            'include.*' => ['string', 'regex:'.StaleServices::UNIT_PATTERN],
+        ]);
+
+        if ($this->busy($machine)) {
+            return response()->json(['error' => 'Updates are being installed on this machine. Restart once they’re done.'], 409);
+        }
+        $job = StaleServices::job($machine, $data['include'] ?? []);
+        if ($job === null) {
+            return response()->json(['error' => 'Nothing on this machine is waiting for a restart.'], 409);
+        }
+
+        $response = $this->queue($queue, $machine, $request, StaleServices::KIND, $job, StaleServices::TIMEOUT);
+        if ($response->status() === 202) {
+            Activity::record($workspace, 'machine.restart_services', $machine->name, $machine, meta: [
+                'services' => array_slice(array_map(fn (string $u) => preg_replace('/\.service$/', '', $u), $job['units']), 0, 20),
+            ]);
+        }
+
+        return $response;
+    }
+
     public function snapshot(Workspace $workspace, Machine $machine): JsonResponse
     {
         abort_unless($machine->workspace_id === $workspace->id, 404);
@@ -96,7 +125,7 @@ class MachineUpdatesController extends Controller
     public function show(Workspace $workspace, Machine $machine, DaemonJob $job): JsonResponse
     {
         abort_unless($machine->workspace_id === $workspace->id && $job->machine_id === $machine->id, 404);
-        abort_unless(in_array($job->kind, [...PackageUpdates::KINDS, 'reboot'], true), 404);
+        abort_unless(in_array($job->kind, [...PackageUpdates::KINDS, StaleServices::KIND, 'reboot'], true), 404);
 
         $result = $job->result ?? [];
 
@@ -107,12 +136,19 @@ class MachineUpdatesController extends Controller
             'error' => $job->error,
             'canPick' => self::canPick($machine),
             'report' => in_array($job->kind, ['package_updates', ...PackageUpdates::INSTALL_KINDS], true) && $result !== [] ? self::report($result) : null,
+            'restarts' => $job->kind === StaleServices::KIND && $result !== [] ? [
+                'failed' => array_values(array_map(
+                    fn (array $r) => ['unit' => (string) $r['unit'], 'message' => is_string($r['message'] ?? null) ? mb_substr($r['message'], 0, 300) : null],
+                    array_filter(is_array($result['restarted'] ?? null) ? $result['restarted'] : [], fn ($r) => is_array($r) && is_string($r['unit'] ?? null) && ! ($r['ok'] ?? false)),
+                )),
+                'after' => StaleServices::fromResult($result),
+            ] : null,
         ]);
     }
 
     /**
      * @param  array<string, mixed>  $result
-     * @return array{manager: mixed, packages: list<array{name: string, from: string|null, to: string, security: bool}>, rebootRequired: bool, applied: bool, held: list<string>, complete: bool}
+     * @return array{manager: mixed, packages: list<array{name: string, from: string|null, to: string, security: bool}>, rebootRequired: bool, restarts: array<string, mixed>|null, applied: bool, held: list<string>, complete: bool}
      */
     public static function report(array $result): array
     {
@@ -121,7 +157,8 @@ class MachineUpdatesController extends Controller
         return [
             'manager' => $result['manager'] ?? null,
             'packages' => array_map(fn (array $row) => ['name' => $row['name'], 'from' => $row['installed'], 'to' => $row['candidate'], 'security' => $row['security']], $rows),
-            'rebootRequired' => (bool) ($result['reboot_required'] ?? false),
+            'rebootRequired' => ($restarts = StaleServices::fromResult($result)) !== null ? $restarts['reboot'] !== [] : (bool) ($result['reboot_required'] ?? false),
+            'restarts' => $restarts,
             'applied' => (bool) ($result['applied'] ?? false),
             'held' => array_values(array_filter(is_array($result['held'] ?? null) ? $result['held'] : [], 'is_string')),
             'complete' => $complete,

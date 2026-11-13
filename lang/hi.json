@@ -3496,5 +3496,20 @@
     "Workspaces keep machines and people separate, e.g. one per client or company.": "Workspaces मशीनों और लोगों को अलग रखते हैं, जैसे हर client या company के लिए एक।",
     "For individual developers.": "अकेले डेवलपर्स के लिए।",
     "For small teams and projects.": "छोटी टीमों और प्रोजेक्ट्स के लिए।",
-    "For agencies and small MSPs.": "एजेंसियों और छोटे MSPs के लिए।"
+    "For agencies and small MSPs.": "एजेंसियों और छोटे MSPs के लिए।",
+    "1 machine has services to restart.": "1 मशीन पर सर्विसेज़ रीस्टार्ट करनी हैं।",
+    ":count machines have services to restart.": ":count मशीनों पर सर्विसेज़ रीस्टार्ट करनी हैं।",
+    "1 service to restart": "1 सर्विस रीस्टार्ट करनी है",
+    ":count services to restart": ":count सर्विसेज़ रीस्टार्ट करनी हैं",
+    "1 service still runs the old files": "1 सर्विस अभी भी पुरानी फ़ाइलें चला रही है",
+    ":count services still run the old files": ":count सर्विसेज़ अभी भी पुरानी फ़ाइलें चला रही हैं",
+    "Restarting them applies the update, no reboot needed. Each one is down for a moment.": "इन्हें रीस्टार्ट करने से अपडेट लागू हो जाता है, रीबूट की ज़रूरत नहीं। हर सर्विस एक पल के लिए बंद रहती है।",
+    "Left out: :name, since restarting it restarts every container or VM it runs.": "छोड़ा गया: :name, क्योंकि इसे रीस्टार्ट करने से इसके सारे कंटेनर या VM रीस्टार्ट हो जाते हैं।",
+    "Left out: :names, since restarting them restarts every container or VM they run.": "छोड़े गए: :names, क्योंकि इन्हें रीस्टार्ट करने से इनके सारे कंटेनर या VM रीस्टार्ट हो जाते हैं।",
+    "A newer kernel is installed (:newest). Only restarting the machine starts it.": "नया kernel इंस्टॉल है (:newest)। यह मशीन रीस्टार्ट करने पर ही चलेगा।",
+    "Restart :count services": ":count सर्विसेज़ रीस्टार्ट करें",
+    "Restarting services…": "सर्विसेज़ रीस्टार्ट हो रही हैं…",
+    "Services restarted": "सर्विसेज़ रीस्टार्ट हो गईं",
+    "These didn’t come back up: :units": "ये वापस चालू नहीं हुईं: :units",
+    "Services restarted on :machineName.": ":machineName पर सर्विसेज़ रीस्टार्ट हो गईं।"
 }

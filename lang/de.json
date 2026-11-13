@@ -3496,5 +3496,20 @@
     "Workspaces keep machines and people separate, e.g. one per client or company.": "Workspaces halten Maschinen und Leute getrennt, z. B. einer pro Kunde oder Firma.",
     "For individual developers.": "Für einzelne Entwickler.",
     "For small teams and projects.": "Für kleine Teams und Projekte.",
-    "For agencies and small MSPs.": "Für Agenturen und kleine MSPs."
+    "For agencies and small MSPs.": "Für Agenturen und kleine MSPs.",
+    "1 machine has services to restart.": "1 Maschine hat Dienste zum Neustarten.",
+    ":count machines have services to restart.": ":count Maschinen haben Dienste zum Neustarten.",
+    "1 service to restart": "1 Dienst neu starten",
+    ":count services to restart": ":count Dienste neu starten",
+    "1 service still runs the old files": "1 Dienst nutzt noch die alten Dateien",
+    ":count services still run the old files": ":count Dienste nutzen noch die alten Dateien",
+    "Restarting them applies the update, no reboot needed. Each one is down for a moment.": "Ein Neustart der Dienste spielt das Update ein, ohne Reboot. Jeder ist kurz weg.",
+    "Left out: :name, since restarting it restarts every container or VM it runs.": "Ausgelassen: :name, weil ein Neustart jeden Container und jede VM darin neu startet.",
+    "Left out: :names, since restarting them restarts every container or VM they run.": "Ausgelassen: :names, weil ein Neustart jeden Container und jede VM darin neu startet.",
+    "A newer kernel is installed (:newest). Only restarting the machine starts it.": "Ein neuerer Kernel ist installiert (:newest). Erst ein Neustart der Maschine startet ihn.",
+    "Restart :count services": ":count Dienste neu starten",
+    "Restarting services…": "Dienste werden neu gestartet…",
+    "Services restarted": "Dienste neu gestartet",
+    "These didn’t come back up: :units": "Diese sind nicht wieder hochgekommen: :units",
+    "Services restarted on :machineName.": "Dienste auf :machineName neu gestartet."
 }

@@ -9,6 +9,7 @@ export type UpdatesSummary = {
     total: number;
     unchecked: number;
     rebootRequired: number;
+    restartServices: number;
     checkedAt: string | null;
     newestCheck: string | null;
 };
@@ -25,6 +26,7 @@ export type UpdatesMachine = {
     updates: number;
     security: number;
     rebootRequired: boolean;
+    staleServices: number;
     checkedAt: string | null;
     complete: boolean;
     held: string[];

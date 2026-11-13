@@ -43,7 +43,8 @@ final class MachineView
             'checkedAt' => $machine->updates_checked_at?->toIso8601String(),
             'waiting' => $machine->updates_checked_at === null ? null : $machine->updates_count,
             'security' => $machine->updates_checked_at === null ? null : $machine->security_updates_count,
-            'rebootRequired' => $machine->reboot_required,
+            'rebootRequired' => $machine->needsReboot(),
+            'servicesToRestart' => array_column($machine->restarts['services'] ?? [], 'unit'),
             'held' => $machine->held_packages ?? [],
             'complete' => $machine->updates_complete,
         ];

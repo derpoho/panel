@@ -64,7 +64,8 @@ use Illuminate\Support\Facades\Storage;
  * @property CarbonImmutable|null $updates_checked_at when its OS updates were last checked (PackageUpdates)
  * @property int $updates_count OS updates waiting at that check
  * @property int $security_updates_count of those, security updates
- * @property bool $reboot_required an installed update waits for a restart
+ * @property bool $reboot_required an installed update waits for a restart, as the machine itself says (yes for a new libc too)
+ * @property array{services: list<array{unit: string, processes: int, files: list<string>, disruptive: bool}>, systemd: bool, reboot: list<array{kind: string, detail: string}>, later: list<string>, kernel: string|null, newestKernel: string|null}|null $restarts what still runs files an update replaced, from daemons that report it
  * @property list<string>|null $held_packages packages held at their version
  * @property array{id: string|null, version_id: string|null, pretty_name: string|null}|null $os_release
  * @property bool $updates_complete false when the list came from an older daemon's capped lines
@@ -117,6 +118,7 @@ class Machine extends Model
             'labels' => 'array',
             'updates_checked_at' => 'datetime',
             'reboot_required' => 'boolean',
+            'restarts' => 'array',
             'held_packages' => 'array',
             'os_release' => 'array',
             'updates_complete' => 'boolean',
@@ -168,6 +170,16 @@ class Machine extends Model
     public function inMaintenance(): bool
     {
         return $this->maintenance_until !== null && $this->maintenance_until->isFuture();
+    }
+
+    /**
+     * A reboot is what applies the waiting updates: a newer kernel or
+     * microcode. With a daemon that reports which services still run old
+     * files, restarting those covers the rest; an older one only says yes or no.
+     */
+    public function needsReboot(): bool
+    {
+        return $this->restarts !== null ? $this->restarts['reboot'] !== [] : $this->reboot_required;
     }
 
     public function isOnline(): bool
