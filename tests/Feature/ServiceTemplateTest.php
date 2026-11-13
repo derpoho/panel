@@ -37,10 +37,10 @@ function sentJob(): array
     return json_decode($command->body(), true)['command']['job'];
 }
 
-test('the catalog has four hundred and forty-six valid templates and every compose variable is provided', function () {
+test('the catalog has four hundred and forty-seven valid templates and every compose variable is provided', function () {
     $templates = app(ServiceTemplateCatalog::class)->all();
 
-    expect($templates)->toHaveCount(446);
+    expect($templates)->toHaveCount(447);
 
     foreach ($templates as $template) {
         expect(in_array($template->category, ServiceTemplate::CATEGORIES, true))->toBeTrue();
@@ -89,6 +89,26 @@ test('a database template deploys its compose file with a generated password', f
 
     expect($response->json('generated.0.key'))->toBe('POSTGRES_PASSWORD')
         ->and($response->json('generated.0.value'))->toBe($job['env']['POSTGRES_PASSWORD']);
+});
+
+test('Supabase gets its anon and service role keys signed with the JWT secret it generates', function () {
+    [$workspace, , $url] = templateMachine();
+
+    $this->actingAs($workspace->owner)->postJson($url, ['template' => 'supabase', 'service' => 'supabase'])->assertAccepted();
+
+    $env = sentJob()['env'];
+    $claims = function (string $jwt) use ($env): array {
+        [$header, $payload, $signature] = explode('.', $jwt);
+        $expected = rtrim(strtr(base64_encode(hash_hmac('sha256', "{$header}.{$payload}", $env['JWT_SECRET'], true)), '+/', '-_'), '=');
+        expect(hash_equals($expected, $signature))->toBeTrue();
+
+        return json_decode(base64_decode(strtr($payload, '-_', '+/')), true);
+    };
+
+    expect(strlen($env['JWT_SECRET']))->toBeGreaterThanOrEqual(32)
+        ->and($claims($env['ANON_KEY']))->toMatchArray(['role' => 'anon', 'iss' => 'supabase'])
+        ->and($claims($env['SERVICE_ROLE_KEY']))->toMatchArray(['role' => 'service_role'])
+        ->and($claims($env['ANON_KEY'])['exp'])->toBeGreaterThan(now()->addYears(9)->timestamp);
 });
 
 test('an install from the app installer is recorded with its app, for the admin Stats', function () {

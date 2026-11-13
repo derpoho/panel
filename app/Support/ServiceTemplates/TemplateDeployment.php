@@ -219,6 +219,13 @@ final class TemplateDeployment
         if ($default === '{url}') {
             return $this->url;
         }
+        // {jwt:role:KEY}: a long-lived HS256 token for role, signed with the value of the earlier field KEY.
+        if (preg_match('/^\{jwt:([a-z_]+):([A-Z0-9_]+)\}$/', $default, $m) && ($this->env[$m[2]] ?? '') !== '') {
+            $encode = fn (array $part): string => rtrim(strtr(base64_encode((string) json_encode($part)), '+/', '-_'), '=');
+            $unsigned = $encode(['alg' => 'HS256', 'typ' => 'JWT']).'.'.$encode(['role' => $m[1], 'iss' => 'supabase', 'iat' => now()->timestamp, 'exp' => now()->addYears(10)->timestamp]);
+
+            return $unsigned.'.'.rtrim(strtr(base64_encode(hash_hmac('sha256', $unsigned, $this->env[$m[2]], true)), '+/', '-_'), '=');
+        }
 
         return $default;
     }
