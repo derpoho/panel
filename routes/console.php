@@ -36,6 +36,7 @@ Schedule::command('deploy-sources:prune')->hourly()->withoutOverlapping();
 
 if (Edition::selfHosted()) {
     Schedule::command('daemon:sync-releases')->hourlyAt(29)->withoutOverlapping();
+    Schedule::command('panel:check-updates')->hourlyAt(41)->withoutOverlapping();
 }
 
 if (InstallPing::enabled()) {

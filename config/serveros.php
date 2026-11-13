@@ -31,6 +31,11 @@ return [
         'path' => env('SERVEROS_INSTALL_PATH'),
     ],
 
+    'updates' => [
+        'version_file' => base_path('VERSION'),
+        'feed_url' => env('SERVEROS_UPDATE_FEED_URL', 'https://api.github.com/repos/serveroshq/panel/releases/latest'),
+    ],
+
     'telemetry' => [
         'enabled' => (bool) env('SERVEROS_TELEMETRY', true),
         'url' => env('SERVEROS_TELEMETRY_URL', 'https://serveros.com/api/installs/ping'),

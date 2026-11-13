@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import ImageUploadField from '@/components/workspace/ImageUploadField.vue';
+import PanelUpdateTile from '@/components/workspace/PanelUpdateTile.vue';
+import type { PanelUpdateState } from '@/components/workspace/PanelUpdateTile.vue';
 import { onWorkspace } from '@/lib/workspaceRoute';
 import settings from '@/routes/workspace/settings';
 import logo from '@/routes/workspace/settings/logo';
@@ -54,6 +56,7 @@ type Props = {
         canSetUp: boolean;
         fromEnvironment: boolean;
     } | null;
+    panelUpdate: PanelUpdateState | null;
 };
 
 const props = defineProps<Props>();
@@ -322,6 +325,8 @@ watch(confirmingDelete, (open) => {
             </div>
         </div>
     </Tile>
+
+    <PanelUpdateTile v-if="panelUpdate" :state="panelUpdate" />
 
     <Tile
         id="danger-zone"

@@ -277,7 +277,9 @@ SERVEROS_TELEMETRY=false
 
 On a plain server, add the same line to the panel's `.env` (and run `php artisan config:cache` again if you cache the config). With it off, nothing is sent, and `install:ping` won't send it either. If you activate a license key, serveros.com's license server still knows that key is in use, since activating and the daily license check-in go there too.
 
-Two other requests aren't part of the ping, and `SERVEROS_TELEMETRY=false` doesn't stop them, since updates depend on them. Neither sends anything about your install:
+Three other requests aren't part of the ping, and `SERVEROS_TELEMETRY=false` doesn't stop them, since updates depend on them. None sends anything about your install:
+
+- Every hour the panel asks `https://api.github.com/repos/serveroshq/panel/releases/latest` for the newest ServerOS release, so Settings › General can say when there's one to update to. `SERVEROS_UPDATE_FEED_URL` points it somewhere else; set it empty to stop it.
 
 - Every hour the panel asks `https://serveros.com/api/daemon/releases/latest` for the newest daemon release, so it can offer your machines updates. It's a plain GET with the channel and CPU type in the query. `DAEMON_RELEASE_FEED_URL` points it somewhere else; set it empty to stop it, and your machines won't be offered daemon updates.
 - Your machines download the daemon from `https://releases.serveros.com` when they connect and when they update. `DAEMON_RELEASES_URL` changes where from.
@@ -289,6 +291,14 @@ serveros-panel upgrade
 ```
 
 That backs up first, pulls the newest image, and restarts on it. The database migrations run as the panel starts. `serveros-panel upgrade 1.2.0` moves to a version of your choosing (it's kept in `.env` as `SERVEROS_IMAGE`, so a later `serveros-panel upgrade` stays on it until you choose another).
+
+You can also update from the panel. When a new release is out, the workspace owner sees it in Settings › General, with an Update button. Once you click it, the server starts the update within a minute. It runs `serveros-panel upgrade` for you, so it backs up first, and the panel is unavailable for a minute or two while it restarts. Once it's back, the workspace's machines are sent the newest daemon, unless their machine policy updates them by itself already.
+
+The button needs the updater, which the install's cron runs every minute (`/etc/cron.d/serveros-panel`, logging to `/var/log/serveros-panel-update.log`). An install from before the updater gets it the night after its next `serveros-panel upgrade`, or right away with:
+
+```sh
+serveros-panel upgrade && serveros-panel schedule
+```
 
 Running the install command again brings it up to date too, keeping your settings, but without the backup first.
 

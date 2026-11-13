@@ -19,6 +19,7 @@ use App\Support\Edition;
 use App\Support\Extensions\Extensions;
 use App\Support\GitHub\GitHubApp;
 use App\Support\Monitors\AlertKinds;
+use App\Support\Updates\PanelUpdates;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,6 +65,7 @@ class WorkspaceSettingsController extends Controller
                 'canSetUp' => GitHubAppSetupController::canManage($request->user(), $workspace),
                 'fromEnvironment' => GitHubApp::fromEnvironment(),
             ] : null,
+            'panelUpdate' => fn () => Edition::installAdmin($request->user(), $workspace) ? PanelUpdates::props() : null,
         ]);
     }
 

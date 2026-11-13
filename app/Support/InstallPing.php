@@ -52,7 +52,7 @@ final class InstallPing
 
     public static function version(): string
     {
-        $file = base_path('VERSION');
+        $file = (string) config('serveros.updates.version_file', base_path('VERSION'));
         $version = is_file($file) ? trim((string) file_get_contents($file)) : '';
 
         return $version !== '' ? Str::limit($version, 40, '') : 'dev';

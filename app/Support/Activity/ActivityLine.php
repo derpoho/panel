@@ -157,6 +157,9 @@ final class ActivityLine
             'workspace.license_add' => $set('added the ServerOS Business license for', null, 'good'),
             'workspace.license_remove' => $set('removed the ServerOS Business license for', null, 'warn'),
             'workspace.delete' => $set('deleted the workspace', null, 'bad'),
+            'panel.update' => $set('started updating ServerOS to', null),
+            'panel.updated' => $set('is on', $t(':to, updated from :from', ['to' => $meta['to'] ?? '', 'from' => $meta['from'] ?? '']), 'good'),
+            'panel.update_failed' => $set('couldn’t update', $t('to :version', ['version' => $meta['version'] ?? '']), 'bad'),
             'machine_group.create' => $set('created the machine group'),
             'machine_group.update' => match (true) {
                 isset($meta['from']) => $set('renamed a machine group to', $t('(was :name)', ['name' => $meta['from']])),
@@ -343,11 +346,13 @@ final class ActivityLine
             $out['mono'] = true;
         } elseif (in_array($a->action, ['backup.failed', 'backup.restore_failed'], true)) {
             $out['detail'] = $meta['error'] ?? null;
+        } elseif ($a->action === 'panel.update_failed') {
+            $out['detail'] = $meta['error'] ?? null;
         } elseif ($a->action === 'monitor.down') {
             $out['detail'] = $meta['cause'] ?? null;
         }
 
-        if (! $a->byPerson() && in_array($a->action, ['machine.offline', 'machine.online', 'machine.disk_full', 'monitor.down', 'monitor.up', 'backup.failed', 'backup.restore_failed', 'machine.connect', 'service.down', 'service.up', 'service.crash_loop', 'workflow.run', 'workflow.failed', 'workflow.skipped', 'fix.done', 'fix.failed', 'mcp.revoke', 'domain.active', 'machine.daemon_updated', 'daemon.update_waiting', 'email_domain.unverified', 'cloud.suspend', 'cloud.resume', 'cloud.end', 'cloud.throttle'], true)) {
+        if (! $a->byPerson() && in_array($a->action, ['machine.offline', 'machine.online', 'machine.disk_full', 'monitor.down', 'monitor.up', 'backup.failed', 'backup.restore_failed', 'machine.connect', 'service.down', 'service.up', 'service.crash_loop', 'workflow.run', 'workflow.failed', 'workflow.skipped', 'fix.done', 'fix.failed', 'mcp.revoke', 'domain.active', 'machine.daemon_updated', 'daemon.update_waiting', 'panel.updated', 'panel.update_failed', 'email_domain.unverified', 'cloud.suspend', 'cloud.resume', 'cloud.end', 'cloud.throttle'], true)) {
             $out['leads'] = true;
         }
 

@@ -39,8 +39,7 @@ class GitHubAppSetupController extends Controller
 
     public static function canManage(?User $user, Workspace $workspace): bool
     {
-        return Edition::selfHosted() && $user !== null
-            && $workspace->owner_id === $user->id && $user->can('manageSettings', $workspace);
+        return Edition::installAdmin($user, $workspace);
     }
 
     public function show(Request $request, Workspace $workspace): Response

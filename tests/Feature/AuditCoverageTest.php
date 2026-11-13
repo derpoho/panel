@@ -50,7 +50,7 @@ test('the not audited list stays short', function () {
     $skipped = $declared->filter(fn ($d, string $action) => $d instanceof NotAudited && str_starts_with($action, 'App\\'));
 
     expect($declared->filter(fn ($d) => $d instanceof Audited)->count())->toBeGreaterThan($declared->filter(fn ($d) => $d instanceof NotAudited)->count())
-        ->and($skipped->count())->toBeLessThanOrEqual(29, 'A new #[NotAudited] write? Record it instead if you can; if not, raise this on purpose.');
+        ->and($skipped->count())->toBeLessThanOrEqual(30, 'A new #[NotAudited] write? Record it instead if you can; if not, raise this on purpose.');
 });
 
 test('every MCP tool that can change things records it, unless it says why not', function () {

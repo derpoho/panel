@@ -37,6 +37,7 @@ use App\Http\Controllers\MachineUpdatesController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\Mcp\OAuthAuthorizeController;
 use App\Http\Controllers\MonitorController;
+use App\Http\Controllers\PanelUpdateController;
 use App\Http\Controllers\PanelVersionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicStatusController;
@@ -291,6 +292,9 @@ Route::domain('{workspace:slug}.'.config('app.domain'))
         Route::get('settings/github/app', [GitHubAppSetupController::class, 'show'])->name('workspace.github.app');
         Route::put('settings/github/app', [GitHubAppSetupController::class, 'store'])->middleware('throttle:10,1')->name('workspace.github.app.store');
         Route::delete('settings/github/app', [GitHubAppSetupController::class, 'destroy'])->name('workspace.github.app.destroy');
+        Route::get('settings/panel-update', [PanelUpdateController::class, 'show'])->middleware('throttle:60,1')->name('workspace.panel-update.show');
+        Route::post('settings/panel-update', [PanelUpdateController::class, 'store'])->middleware('throttle:10,1')->name('workspace.panel-update.store');
+        Route::post('settings/panel-update/check', [PanelUpdateController::class, 'check'])->middleware('throttle:10,1')->name('workspace.panel-update.check');
         Route::delete('settings/github/{installation}', [GitHubConnectionController::class, 'destroy'])->withoutScopedBindings()->name('workspace.github.destroy');
         Route::patch('settings/general', [WorkspaceSettingsController::class, 'update'])->name('workspace.settings.update');
         Route::delete('settings/workspace', [WorkspaceSettingsController::class, 'destroy'])->name('workspace.settings.destroy');

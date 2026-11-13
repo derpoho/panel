@@ -269,7 +269,9 @@ docker compose exec -T web php artisan daemon:sync-releases --no-interaction >/d
 # a month before its own runs out, then a backup of the database and
 # storage, the last 14 kept. Written each time, so running the script
 # again brings the schedule up to date.
-if [ -d /etc/cron.d ]; then
+if grep -q '^    schedule) schedule ;;' /usr/local/bin/serveros-panel; then
+    SERVEROS_DIR="$DIR" /usr/local/bin/serveros-panel schedule
+elif [ -d /etc/cron.d ]; then
     cat > /etc/cron.d/serveros-panel <<EOF
 # ServerOS: the gateway's certificate checked, then a backup into $DIR/backups (serveros-panel nightly).
 SERVEROS_DIR=$DIR

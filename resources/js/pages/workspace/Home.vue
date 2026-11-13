@@ -67,6 +67,7 @@ type Props = {
     machines: Machine[];
     memberCount: number;
     lastBackup: string | null;
+    panelUpdate: { version: string; current: string } | null;
     licenseMachines?: {
         allowed: number;
         connected: number;
@@ -588,6 +589,38 @@ const focusRing =
         </template>
 
         <div class="flex min-w-0 flex-col gap-5">
+            <Link
+                v-if="panelUpdate"
+                href="/settings/general#updates"
+                class="ds-tile flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-(--ds-row-hover)"
+                :class="focusRing"
+            >
+                <span
+                    class="size-[18px] shrink-0 rounded-full border-2 border-(--ds-blue)"
+                    aria-hidden="true"
+                />
+                <span class="min-w-0 flex-1 truncate text-[14px]/5">
+                    <span class="font-medium">{{
+                        $t('Update available')
+                    }}</span>
+                    <span class="text-(--ds-text-muted)">
+                        ·
+                        {{
+                            $t(
+                                'ServerOS :version is available. You’re on :current.',
+                                {
+                                    version: panelUpdate.version,
+                                    current: panelUpdate.current,
+                                },
+                            )
+                        }}</span
+                    >
+                </span>
+                <span class="shrink-0 text-[13px]/5 text-(--ds-text-muted)">{{
+                    $t('Update')
+                }}</span>
+            </Link>
+
             <Link
                 v-if="fixesWaiting.length"
                 :href="`/fixes?fix=${fixesWaiting[0].id}`"

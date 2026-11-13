@@ -11,6 +11,8 @@
 #   serveros-panel restore <backup>     put a backup back (replaces what's there now)
 #   serveros-panel gateway-certificate  renew the gateway's certificate if it runs out within 30 days
 #   serveros-panel nightly              both of those, as the install's cron runs it every night
+#   serveros-panel updater              run an update asked for in Settings › General (cron, every minute)
+#   serveros-panel schedule             write the cron for nightly and updater
 #   serveros-panel setup-code           the code the web installer asks for, until it's set up
 #   serveros-panel artisan <command>    run an artisan command in the panel
 #   serveros-panel restart | stop | start
@@ -24,7 +26,7 @@ fail() { printf 'serveros-panel: %s\n' "$*" >&2; exit 1; }
 
 # Help works before anything is installed.
 case "${1:-}" in
-    help|-h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    help|-h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 esac
 
 [ -f "$DIR/compose.yaml" ] || fail "no install in $DIR (set SERVEROS_DIR if it's elsewhere)."
@@ -113,9 +115,57 @@ nightly() {
     # Each step on its own, so one failing doesn't skip the other; the
     # cron log says which failed, and so does the exit code.
     local failed=0
+    schedule || failed=1
     "$0" gateway-certificate || failed=1
     "$0" backup --quiet || failed=1
     return "$failed"
+}
+
+schedule() {
+    [ -d /etc/cron.d ] && [ -w /etc/cron.d ] || return 0
+    cat > /etc/cron.d/serveros-panel.new <<EOF
+# ServerOS: the gateway's certificate checked, then a backup into $DIR/backups (serveros-panel nightly),
+# and updates asked for in Settings › General (serveros-panel updater).
+SERVEROS_DIR=$DIR
+17 3 * * * root /usr/local/bin/serveros-panel nightly >> /var/log/serveros-panel-nightly.log 2>&1
+* * * * * root /usr/local/bin/serveros-panel updater >> /var/log/serveros-panel-update.log 2>&1
+EOF
+    mv /etc/cron.d/serveros-panel.new /etc/cron.d/serveros-panel
+}
+
+finish_update() {
+    compose exec -T web php artisan panel:update-finished "$@" || true
+}
+
+updater() {
+    local claim id version current tag=""
+    exec 9>"$DIR/.updater.lock"
+    flock -n 9 || return 0
+    claim="$(compose exec -T web php artisan panel:update-claim 2>/dev/null | tr -d '\r' | tail -n1)" || return 0
+    [ -n "$claim" ] || return 0
+    id="${claim%% *}"
+    version="${claim#* }"
+    case "$id$version" in
+        *[!0-9A-Za-z.-]*) return 0 ;;
+    esac
+    current="$(image)"
+    say "$(date -u '+%F %T') Updating to $version, as asked for in the panel"
+    case "${current##*/}" in
+        *:*) tag="${current##*:}" ;;
+    esac
+    if [ -n "$tag" ] && [ "$tag" != latest ]; then
+        set -- upgrade "$version"
+    else
+        set -- upgrade
+    fi
+    if "$0" "$@"; then
+        finish_update "$id"
+        return 0
+    fi
+    if [ "$#" -eq 2 ] && ! docker image inspect "${current%:*}:${version#v}" >/dev/null 2>&1; then
+        set_env SERVEROS_IMAGE "$current"
+    fi
+    finish_update "$id" --failed="The update stopped partway. See /var/log/serveros-panel-update.log on the server."
 }
 
 upgrade() {
@@ -138,6 +188,7 @@ upgrade() {
     # Migrations run as the web container starts.
     compose up -d --remove-orphans
     wait_healthy
+    schedule
     say "Upgraded to $(compose exec -T web cat /app/VERSION 2>/dev/null || image)."
 }
 
@@ -151,6 +202,8 @@ case "$command" in
     restore) restore "$@" ;;
     gateway-certificate) gateway_certificate ;;
     nightly) nightly ;;
+    updater) updater ;;
+    schedule) schedule ;;
     setup-code) compose exec -T web php artisan install:code "$@" ;;
     artisan) compose exec web php artisan "$@" ;;
     restart) compose restart ;;
