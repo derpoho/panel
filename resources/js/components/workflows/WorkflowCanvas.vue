@@ -125,7 +125,7 @@ function track(
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', cancel);
-    stopTracking = stop;
+    stopTracking = () => cancel(new PointerEvent('pointercancel'));
 }
 
 function animateView(update: (current: View) => View): void {
