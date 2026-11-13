@@ -1,0 +1,88 @@
+name: Downloads badge
+
+# Keeps the README's downloads badge up to date. GitHub's API doesn't give a
+# container package's pull count, so this reads "Total downloads" (every pull
+# since the image was first published) from the package page and writes it to
+# downloads.json on the badges branch, which shields.io reads as an endpoint badge.
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: downloads-badge
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update the count
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write # downloads.json on the badges branch
+    steps:
+      - name: Read the count and write the badge
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const PACKAGE_PAGE = 'https://github.com/serveroshq/panel/pkgs/container/panel';
+            const BRANCH = 'badges';
+            const FILE = 'downloads.json';
+            const { owner, repo } = context.repo;
+
+            const response = await fetch(PACKAGE_PAGE);
+            if (!response.ok) {
+              core.setFailed(`The package page answered ${response.status}.`);
+              return;
+            }
+            const match = (await response.text()).match(/Total downloads<\/span>\s*<h3 title="(\d+)"/);
+            if (!match) {
+              core.setFailed('No "Total downloads" on the package page. Did its layout change?');
+              return;
+            }
+            const total = Number(match[1]);
+
+            function compact(n) {
+              for (const [size, suffix] of [[1e9, 'B'], [1e6, 'M'], [1e3, 'k']]) {
+                if (n >= size) return `${Number((n / size).toFixed(n >= size * 10 ? 0 : 1))}${suffix}`;
+              }
+              return String(n);
+            }
+
+            const badge = {
+              schemaVersion: 1,
+              label: 'Downloads',
+              message: compact(total),
+              color: '2496ed',
+              namedLogo: 'docker',
+              logoColor: 'white',
+              total,
+            };
+            const content = Buffer.from(JSON.stringify(badge, null, 2) + '\n').toString('base64');
+
+            let sha;
+            try {
+              const { data } = await github.rest.repos.getContent({ owner, repo, path: FILE, ref: BRANCH });
+              if (data.content.replace(/\n/g, '') === content) {
+                core.info(`Still ${total}, nothing to write.`);
+                return;
+              }
+              sha = data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            const message = `Downloads: ${total}`;
+            try {
+              await github.rest.repos.createOrUpdateFileContents({ owner, repo, path: FILE, branch: BRANCH, message, content, sha });
+            } catch (error) {
+              if (error.status !== 404 && error.status !== 422) throw error;
+              // No badges branch yet: start it as an orphan holding just the badge.
+              const { data: blob } = await github.rest.git.createBlob({ owner, repo, content, encoding: 'base64' });
+              const { data: tree } = await github.rest.git.createTree({ owner, repo, tree: [{ path: FILE, mode: '100644', type: 'blob', sha: blob.sha }] });
+              const { data: commit } = await github.rest.git.createCommit({ owner, repo, message, tree: tree.sha, parents: [] });
+              await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${BRANCH}`, sha: commit.sha });
+            }
+            core.info(`Downloads badge now says ${badge.message} (${total}).`);
