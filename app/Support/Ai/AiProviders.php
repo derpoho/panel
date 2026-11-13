@@ -5,6 +5,7 @@ namespace App\Support\Ai;
 use App\Models\Workspace;
 use App\Models\WorkspaceAiKey;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -143,11 +144,13 @@ class AiProviders
                         'messages' => [['role' => 'user', 'content' => $user]],
                     ]),
                 'openai' => Http::withToken($ai['key'])->connectTimeout(10)->timeout(120)
-                    ->post('https://api.openai.com/v1/chat/completions', [
+                    ->post('https://api.openai.com/v1/responses', [
                         'model' => $ai['model'],
-                        'max_completion_tokens' => $maxTokens * 2,
-                        'response_format' => ['type' => 'json_object'],
-                        'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]],
+                        'instructions' => $system,
+                        'input' => [['role' => 'user', 'content' => $user]],
+                        'max_output_tokens' => $maxTokens * 2,
+                        'text' => ['format' => ['type' => 'json_object']],
+                        'store' => false,
                     ]),
                 default => Http::withToken($ai['key'])->connectTimeout(10)->timeout(90)
                     ->post('https://api.groq.com/openai/v1/chat/completions', [
@@ -174,18 +177,50 @@ class AiProviders
             });
         }
 
-        $text = $ai['provider'] === 'anthropic'
-            ? implode('', array_map(fn ($c) => is_array($c) && ($c['type'] ?? null) === 'text' ? (string) ($c['text'] ?? '') : '', (array) $response->json('content', [])))
-            : (string) $response->json('choices.0.message.content');
+        $text = match ($ai['provider']) {
+            'openai' => $this->openaiJsonText($response),
+            'anthropic' => implode('', array_map(fn ($c) => is_array($c) && ($c['type'] ?? null) === 'text' ? (string) ($c['text'] ?? '') : '', (array) $response->json('content', []))),
+            default => (string) $response->json('choices.0.message.content'),
+        };
 
         $start = strpos($text, '{');
         $end = strrpos($text, '}');
-        $answer = $start === false || $end === false ? null : json_decode(substr($text, $start, $end - $start + 1), true);
-        if (! is_array($answer)) {
+        $answer = $start === false || $end === false ? null : json_decode($ai['provider'] === 'openai' ? $text : substr($text, $start, $end - $start + 1), true);
+        if (! is_array($answer) || ($ai['provider'] === 'openai' && ! str_starts_with(ltrim($text), '{'))) {
             throw new RuntimeException('The model’s answer wasn’t in the shape it was asked for. Try again.');
         }
 
         return [$answer, (string) ($response->json('model') ?: $ai['model'])];
+    }
+
+    private function openaiJsonText(Response $response): string
+    {
+        if ($response->json('status') !== 'completed') {
+            throw new RuntimeException('The model didn’t finish its answer. Try again.');
+        }
+
+        $text = '';
+        foreach ((array) $response->json('output', []) as $item) {
+            if (! is_array($item) || ($item['type'] ?? null) !== 'message') {
+                continue;
+            }
+            if (($item['status'] ?? null) !== 'completed') {
+                throw new RuntimeException('The model didn’t finish its answer. Try again.');
+            }
+            foreach ((array) ($item['content'] ?? []) as $part) {
+                if (! is_array($part)) {
+                    continue;
+                }
+                if (($part['type'] ?? null) === 'refusal') {
+                    throw new RuntimeException('The model declined to answer. Try asking another way.');
+                }
+                if (($part['type'] ?? null) === 'output_text') {
+                    $text .= (string) ($part['text'] ?? '');
+                }
+            }
+        }
+
+        return $text;
     }
 
     /** @throws RuntimeException */

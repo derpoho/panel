@@ -16,7 +16,7 @@ class AgentChat
      * @param  array{provider: string, key: string, model: string, own: bool}  $ai
      * @param  list<array<string, mixed>>  $messages
      * @param  list<array{name: string, description: string, schema: array<string, mixed>}>  $tools
-     * @return array{text: string, calls: list<array{id: string, name: string, arguments: array<string, mixed>}>, model: string}
+     * @return array{text: string, calls: list<array{id: string, name: string, arguments: array<string, mixed>}>, model: string, openai_output?: list<array<string, mixed>>}
      *
      * @throws RuntimeException
      */
@@ -28,20 +28,22 @@ class AgentChat
         $who = $ai['own'] ? 'your '.(AiProviders::PROVIDERS[$ai['provider']]['label'] ?? $ai['provider']).' key' : 'the assistant';
 
         try {
-            $response = $ai['provider'] === 'anthropic'
-                ? $this->anthropic($ai, $system, $messages, $tools, $maxTokens)
-                : $this->openai($ai, $ai['model'], $system, $messages, $tools, $maxTokens);
-            if ($ai['provider'] !== 'anthropic' && self::malformedCall($response)) {
-                $response = $this->openai($ai, $ai['model'], $system, $messages, $tools, $maxTokens);
+            $response = match ($ai['provider']) {
+                'anthropic' => $this->anthropic($ai, $system, $messages, $tools, $maxTokens),
+                'openai' => $this->responses($ai, $system, $messages, $tools, $maxTokens),
+                default => $this->groq($ai, $ai['model'], $system, $messages, $tools, $maxTokens),
+            };
+            if ($ai['provider'] === 'groq' && self::malformedCall($response)) {
+                $response = $this->groq($ai, $ai['model'], $system, $messages, $tools, $maxTokens);
             }
             if ($ai['provider'] === 'groq' && ($response->status() === 429 || self::malformedCall($response)) && $ai['model'] !== self::GROQ_FALLBACK) {
-                $response = $this->openai($ai, self::GROQ_FALLBACK, $system, $messages, $tools, $maxTokens);
+                $response = $this->groq($ai, self::GROQ_FALLBACK, $system, $messages, $tools, $maxTokens);
             }
         } catch (ConnectionException) {
             throw new RuntimeException("Couldn’t reach {$who}. Try again in a moment.");
         }
 
-        if (($call = self::unofferedCall($response)) !== null) {
+        if ($ai['provider'] === 'groq' && ($call = self::unofferedCall($response)) !== null) {
             return ['text' => '', 'calls' => [$call], 'model' => $ai['model']];
         }
 
@@ -58,7 +60,11 @@ class AgentChat
             });
         }
 
-        return $ai['provider'] === 'anthropic' ? $this->readAnthropic($response, $ai['model']) : $this->readOpenai($response, $ai['model']);
+        return match ($ai['provider']) {
+            'anthropic' => $this->readAnthropic($response, $ai['model']),
+            'openai' => $this->readResponses($response, $ai['model']),
+            default => $this->readOpenai($response, $ai['model']),
+        };
     }
 
     private static function malformedCall(Response $response): bool
@@ -92,7 +98,7 @@ class AgentChat
      * @param  list<array<string, mixed>>  $messages
      * @param  list<array{name: string, description: string, schema: array<string, mixed>}>  $tools
      */
-    private function openai(array $ai, string $model, string $system, array $messages, array $tools, int $maxTokens): Response
+    private function groq(array $ai, string $model, string $system, array $messages, array $tools, int $maxTokens): Response
     {
         $wire = [['role' => 'system', 'content' => $system]];
         foreach ($messages as $m) {
@@ -116,15 +122,84 @@ class AgentChat
             'messages' => $wire,
             'tools' => array_map(fn (array $t) => ['type' => 'function', 'function' => ['name' => $t['name'], 'description' => $t['description'], 'parameters' => $t['schema']]], $tools),
         ];
-        if ($ai['provider'] === 'openai') {
-            $body['max_completion_tokens'] = $maxTokens * 3;
-        } else {
-            $body += ['temperature' => 0.2, 'max_completion_tokens' => $maxTokens, 'reasoning_effort' => 'low', 'include_reasoning' => false];
+        $body += ['temperature' => 0.2, 'max_completion_tokens' => $maxTokens, 'reasoning_effort' => 'low', 'include_reasoning' => false];
+
+        return Http::withToken($ai['key'])->connectTimeout(10)->timeout(90)->post('https://api.groq.com/openai/v1/chat/completions', $body);
+    }
+
+    /**
+     * @param  array{provider: string, key: string, model: string, own: bool}  $ai
+     * @param  list<array<string, mixed>>  $messages
+     * @param  list<array{name: string, description: string, schema: array<string, mixed>}>  $tools
+     */
+    private function responses(array $ai, string $system, array $messages, array $tools, int $maxTokens): Response
+    {
+        $input = [];
+        foreach ($messages as $m) {
+            if ($m['role'] === 'assistant') {
+                // Keep encrypted reasoning and its function calls together, including across approvals.
+                if (($m['openai_model'] ?? null) === $ai['model'] && isset($m['openai_output'])) {
+                    array_push($input, ...$m['openai_output']);
+
+                    continue;
+                }
+                if (($m['content'] ?? '') !== '') {
+                    $input[] = ['role' => 'assistant', 'content' => $m['content']];
+                }
+                foreach ($m['calls'] ?? [] as $call) {
+                    $input[] = ['type' => 'function_call', 'call_id' => $call['id'], 'name' => $call['name'], 'arguments' => json_encode((object) $call['arguments'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)];
+                }
+            } elseif ($m['role'] === 'tool') {
+                $input[] = ['type' => 'function_call_output', 'call_id' => $m['id'], 'output' => $m['content']];
+            } else {
+                $input[] = ['role' => 'user', 'content' => $m['content']];
+            }
         }
 
-        $url = $ai['provider'] === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
+        return Http::withToken($ai['key'])->connectTimeout(10)->timeout(90)
+            ->post('https://api.openai.com/v1/responses', [
+                'model' => $ai['model'],
+                'instructions' => $system,
+                'input' => $input,
+                'tools' => array_map(fn (array $t) => ['type' => 'function', 'name' => $t['name'], 'description' => $t['description'], 'parameters' => $t['schema'], 'strict' => false], $tools),
+                'max_output_tokens' => $maxTokens * 3,
+                'store' => false,
+                'include' => ['reasoning.encrypted_content'],
+            ]);
+    }
 
-        return Http::withToken($ai['key'])->connectTimeout(10)->timeout(90)->post($url, $body);
+    /** @return array{text: string, calls: list<array{id: string, name: string, arguments: array<string, mixed>}>, model: string, openai_output: list<array<string, mixed>>} */
+    private function readResponses(Response $response, string $model): array
+    {
+        if ($response->json('status') !== 'completed') {
+            throw new RuntimeException('Your OpenAI key returned an incomplete answer. Try again.');
+        }
+        $text = '';
+        $calls = [];
+        $output = (array) $response->json('output', []);
+        foreach ($output as $item) {
+            if (in_array($item['type'] ?? null, ['message', 'function_call'], true) && ($item['status'] ?? null) !== 'completed') {
+                throw new RuntimeException('Your OpenAI key returned an incomplete answer. Try again.');
+            }
+            if (($item['type'] ?? null) === 'message') {
+                foreach ($item['content'] ?? [] as $part) {
+                    if (($part['type'] ?? null) === 'refusal') {
+                        throw new RuntimeException('OpenAI declined this request. Try a different question.');
+                    }
+                    if (($part['type'] ?? null) === 'output_text') {
+                        $text .= $part['text'];
+                    }
+                }
+            } elseif (($item['type'] ?? null) === 'function_call') {
+                $arguments = json_decode((string) ($item['arguments'] ?? ''), true);
+                if (! is_array($arguments) || ($item['call_id'] ?? '') === '' || ($item['name'] ?? '') === '') {
+                    throw new RuntimeException('OpenAI returned an invalid tool call. Try again.');
+                }
+                $calls[] = ['id' => $item['call_id'], 'name' => $item['name'], 'arguments' => $arguments];
+            }
+        }
+
+        return ['text' => trim($text), 'calls' => $calls, 'model' => (string) ($response->json('model') ?: $model), 'openai_output' => array_values($output)];
     }
 
     /**

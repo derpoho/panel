@@ -213,10 +213,17 @@ class AssistantAgent
                 if ($answer['text'] !== '') {
                     ($this->emit)(['type' => 'text', 'text' => $answer['text']]);
                 }
-                foreach ($answer['calls'] as $i => $call) {
-                    $answer['calls'][$i]['id'] = 'call_'.Str::lower(Str::random(24));
+                if ($ai['provider'] !== 'openai') {
+                    foreach ($answer['calls'] as $i => $call) {
+                        $answer['calls'][$i]['id'] = 'call_'.Str::lower(Str::random(24));
+                    }
                 }
-                $this->chat['messages'][] = ['role' => 'assistant', 'content' => $answer['text'], 'calls' => $answer['calls']];
+                $message = ['role' => 'assistant', 'content' => $answer['text'], 'calls' => $answer['calls']];
+                if (isset($answer['openai_output'])) {
+                    $message['openai_output'] = $answer['openai_output'];
+                    $message['openai_model'] = $ai['model'];
+                }
+                $this->chat['messages'][] = $message;
 
                 if ($answer['calls'] === []) {
                     if (! $this->changed && ! $this->nudged && self::claimsAction($answer['text'])) {
